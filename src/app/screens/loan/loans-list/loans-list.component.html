@@ -1,1 +1,87 @@
-<p>loans-list works!</p>
+<div>
+    <div class="panel border-[#e0e6ed] px-0 pb-1.5 dark:border-[#1b2e4b]">
+        <div class="datatable invoice-table">
+            <div class="datatable invoice-table">
+                <h2 class="text-xl ml-4 mb-2">Gestión de prestamos</h2>
+                <div class="mb-4.5 flex flex-col gap-5 px-5 md:flex-row md:items-center">
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="btn btn-primary" (click)="add()">
+                            <i class="fa fa-user-plus ltr:mr-2 rtl:ml-2"></i>
+                            Agregar Prestamo
+                        </button>
+                    </div>
+                    <div>
+                        <input [(ngModel)]="search" type="text" class="form-input" placeholder="Buscar..." />
+                    </div>
+                </div>
+
+                <ng-datatable
+                    #datatable
+                    [rows]="loans()"
+                    [columns]="cols"
+                    [sortable]="true"
+                    [search]="search"
+                    noDataContent="No se encontraron resultados"
+                    paginationInfo="Mostrando {0} a {1} de {2} registros"
+                    skin="whitespace-nowrap bh-table-hover"
+                    firstArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M13 19L7 12L13 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path opacity="0.5" d="M16.9998 19L10.9998 12L16.9998 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'
+                    lastArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M11 19L17 12L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path opacity="0.5" d="M6.99976 19L12.9998 12L6.99976 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg> '
+                    previousArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M15 5L9 12L15 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'
+                    nextArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'
+                >
+                    <ng-template slot="id" let-value="data">
+                        <a class="font-semibold text-primary underline hover:no-underline">#{{ value.id }}</a>
+                    </ng-template>
+
+                    <ng-template slot="cliente" let-value="data">
+                        <div class="font-semibold">{{ value.cliente }}</div>
+                    </ng-template>
+
+                    <ng-template slot="monto" let-value="data">
+                        <div class="font-semibold">{{ value.monto | currency:'USD':'symbol':'1.2-2' }}</div>
+                    </ng-template>
+
+                    <ng-template slot="tasa" let-value="data">
+                        <div class="font-semibold">{{ value.tasa }}%</div>
+                    </ng-template>
+
+                    <ng-template slot="plazo" let-value="data">
+                        <div class="font-semibold">{{ value.plazo }} meses</div>
+                    </ng-template>
+                    
+                    <ng-template slot="fechaInicio" let-value="data">
+                        <div class="font-semibold">{{ value.fechaInicio | date:'dd/MM/yyyy' }}</div>
+                    </ng-template>
+
+                    <ng-template slot="tipoInteres" let-value="data">                     
+                        <div class="font-semibold">{{ value.tipoInteres }}</div>    
+                    </ng-template>
+                    
+                    <ng-template slot="estado" let-value="data">
+                        <div [ngClass]="{
+                            'text-xs font-medium px-2.5 py-1 rounded-full bg-success/10 text-success': value.estado === 'Pagado',
+                            'text-xs font-medium px-2.5 py-1 rounded-full bg-warning/10 text-warning': value.estado === 'Pendiente',
+                            'text-xs font-medium px-2.5 py-1 rounded-full bg-danger/10 text-danger': value.estado === 'Atrasado'
+                        }">
+                            {{ value.estado }}
+                        </div>
+                    </ng-template>
+                    
+                    <ng-template slot="acciones" let-value="data">
+
+                        <div>
+
+                            <button type="button" class="hover:text-info" (click)="editar(value)">
+                                <i class="fa fa-edit"></i>
+                            </button>
+
+                            <button type="button" class="hover:text-danger ml-3" (click)="eliminar(value)">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </ng-template>
+                </ng-datatable>
+            </div>
+        </div>
+    </div>
+</div>
