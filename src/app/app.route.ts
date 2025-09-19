@@ -15,6 +15,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./screens/loan/loans-list/loans-list.component').then((c) => c.LoansListComponent),
             },
             {
+                path: 'loan/form',
+                loadComponent: () => import('./screens/loan/loans-form/loans-form.component').then((c) => c.LoansFormComponent),
+            },
+            {
                 path: 'customers',
                 loadComponent: () => import('./screens/customer/customers-list/customers-list.component').then((c) => c.CustomersListComponent),
             }

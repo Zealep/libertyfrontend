@@ -1,0 +1,136 @@
+<div class="flex flex-col gap-2.5 xl:flex-row">
+    <div class="panel flex-1 px-0 py-6 ltr:xl:mr-6 rtl:xl:ml-6">
+        <div class="text-sm bg-white p-8 max-w-4xl w-full">
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold">Registrar Préstamo</h2>
+            </div>
+
+            <form [formGroup]="loanForm" class="space-y-5" ngNativeValidate (ngSubmit)="onSubmit()">
+                <!-- Cliente -->
+                <div class="flex sm:flex-row flex-col">
+                    <label for="customer" class="mb-0 sm:w-1/4 sm:ltr:mr-2 rtl:ml-2">Cliente</label>
+                    <ng-select formControlName="customer"
+                               [items]="customers"
+                               bindLabel="firstName"
+                               bindValue="customer"
+                               class="flex-1">
+                        <ng-template ng-label-tmp let-item="item">
+                            {{ item.firstName }} {{ item.lastName }}
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                            {{ item.firstName }} {{ item.lastName }}
+                        </ng-template>
+                    </ng-select>
+                </div>
+
+                <!-- Monto principal -->
+                <div class="flex sm:flex-row flex-col">
+                    <label for="principal" class="mb-0 sm:w-1/4 sm:ltr:mr-2 rtl:ml-2">Monto principal</label>
+                    <input id="principal"
+                           type="number"
+                           class="form-input flex-1"
+                           formControlName="principal"
+                           placeholder="Ej: 10000"
+                           required />
+                </div>
+
+                <!-- Tasa de interés mensual -->
+                <div class="flex sm:flex-row flex-col">
+                    <label for="monthlyInterestRate" class="mb-0 sm:w-1/4 sm:ltr:mr-2 rtl:ml-2">Tasa de interés mensual (%)</label>
+                    <input id="monthlyInterestRate"
+                           type="number"
+                           step="0.01"
+                           class="form-input flex-1"
+                           formControlName="monthlyInterestRate"
+                           placeholder="Ej: 2.5"
+                           required />
+                </div>
+
+                <!-- Plazo en meses -->
+                <div class="flex sm:flex-row flex-col">
+                    <label for="termMonths" class="mb-0 sm:w-1/4 sm:ltr:mr-2 rtl:ml-2">Plazo (meses)</label>
+                    <input id="termMonths"
+                           type="number"
+                           class="form-input flex-1"
+                           formControlName="termMonths"
+                           placeholder="Ej: 12"
+                           required />
+                </div>
+
+                <!-- Tipo de interés -->
+                <div class="flex sm:flex-row flex-col">
+                    <label for="interestType" class="mb-0 sm:w-1/4 sm:ltr:mr-2 rtl:ml-2">Tipo de interés</label>
+                    <ng-select formControlName="interestType"
+                               [items]="interestTypes"
+                               bindLabel="label"
+                               bindValue="value"
+                               class="flex-1">
+                        <ng-template ng-label-tmp let-item="item">
+                            {{ item.label }}
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                            {{ item.label }}
+                        </ng-template>
+                    </ng-select>
+                </div>
+
+                <!-- Fecha de desembolso -->
+                <div class="flex sm:flex-row flex-col">
+                    <label for="disbursementDate" class="mb-0 sm:w-1/4 sm:ltr:mr-2 rtl:ml-2">Fecha de desembolso</label>
+                    <input id="disbursementDate"
+                           type="date"
+                           class="form-input flex-1"
+                           formControlName="disbursementDate"
+                           required />
+                </div>
+
+                <!-- Botón para simular -->
+                <div class="flex justify-end mt-6">
+                    <button type="button"
+                            class="btn btn-outline-primary"
+                            (click)="simulateInstallments()">
+                        Simular cuotas
+                    </button>
+                </div>
+
+                <!-- Tabla de cuotas (simulador) -->
+                <div *ngIf="installments && installments.length" class="mt-6">
+                    <h5 class="text-lg font-medium mb-4">Tabla de cuotas simulada</h5>
+                    <div class="table-responsive">
+                        <table class="table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="!text-center">#</th>
+                                    <th>Fecha</th>
+                                    <th class="!text-right">Cuota</th>
+                                    <th class="!text-right">Interés</th>
+                                    <th class="!text-right">Capital</th>
+                                    <th class="!text-right">Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let inst of installments; let i = index">
+                                    <td class="!text-center">{{ i + 1 }}</td>
+                                    <td>{{ inst.dueDate | date:'dd/MM/yyyy' }}</td>
+                                    <td class="!text-right">{{ inst.amount | currency:'S/. ':'symbol':'1.2-2' }}</td>
+                                    <td class="!text-right">{{ inst.interest | currency:'S/. ':'symbol':'1.2-2' }}</td>
+                                    <td class="!text-right">{{ inst.principalPart | currency:'S/. ':'symbol':'1.2-2' }}</td>
+                                    <td class="!text-right">{{ inst.remainingBalance | currency:'S/. ':'symbol':'1.2-2' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Botón para registrar -->
+                <div class="flex justify-end mt-6">
+                    <button type="submit"
+                            class="btn btn-primary"
+                            [disabled]="!loanForm.valid">
+                        Registrar préstamo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
