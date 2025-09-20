@@ -48,13 +48,13 @@ export class LoansListComponent {
       this.router.navigate(['/loan/form']);
     }
 
-    editar(loan: Loan){
-      this.router.navigate(['/loan/form', loan.id]);
+    editar(id: number){
+      this.router.navigate(['/loan/form', id]);
     }
 
-    eliminar(loan: Loan){
+    eliminar(id: number){
       if(confirm('¿Está seguro de eliminar este préstamo?')){
-        this.loanService.delete(loan.id).subscribe({
+        this.loanService.delete(id).subscribe({
           next: () =>{
             this.getALL();
           },

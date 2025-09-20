@@ -9,18 +9,28 @@
                 <!-- Cliente -->
                 <div class="flex sm:flex-row flex-col">
                     <label for="customer" class="mb-0 sm:w-1/4 sm:ltr:mr-2 rtl:ml-2">Cliente</label>
-                    <ng-select formControlName="customer"
-                               [items]="customers"
-                               bindLabel="firstName"
-                               bindValue="customer"
-                               class="flex-1">
-                        <ng-template ng-label-tmp let-item="item">
-                            {{ item.firstName }} {{ item.lastName }}
-                        </ng-template>
-                        <ng-template ng-option-tmp let-item="item">
-                            {{ item.firstName }} {{ item.lastName }}
-                        </ng-template>
-                    </ng-select>
+                    <div class="flex-1 flex gap-2">
+                        <ng-select formControlName="customer"
+                                   [items]="customers()"
+                                   bindLabel="firstName"
+                                   bindValue="id"
+                                   class="flex-1">
+                            <ng-template ng-label-tmp let-item="item">
+                                {{ item.firstName }} {{ item.lastName }}
+                            </ng-template>
+                            <ng-template ng-option-tmp let-item="item">
+                                {{ item.firstName }} {{ item.lastName }}
+                            </ng-template>
+                        </ng-select>
+                        <button type="button"
+                                class="btn btn-success btn-sm"
+                                (click)="openCustomerModal()"
+                                title="Agregar nuevo cliente">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Monto principal -->
@@ -88,13 +98,15 @@
                 <div class="flex justify-end mt-6">
                     <button type="button"
                             class="btn btn-outline-primary"
-                            (click)="simulateInstallments()">
+                            (click)="simulateInstallments()"
+                            [disabled]="!loanForm.valid"
+                            >
                         Simular cuotas
                     </button>
                 </div>
 
                 <!-- Tabla de cuotas (simulador) -->
-                <div *ngIf="installments && installments.length" class="mt-6">
+                <div *ngIf="installments() && installments().length" class="mt-6">
                     <h5 class="text-lg font-medium mb-4">Tabla de cuotas simulada</h5>
                     <div class="table-responsive">
                         <table class="table-hover">
@@ -109,10 +121,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let inst of installments; let i = index">
+                                <tr *ngFor="let inst of installments(); let i = index">
                                     <td class="!text-center">{{ i + 1 }}</td>
                                     <td>{{ inst.dueDate | date:'dd/MM/yyyy' }}</td>
-                                    <td class="!text-right">{{ inst.amount | currency:'S/. ':'symbol':'1.2-2' }}</td>
+                                    <td class="!text-right">{{ inst.amount| currency:'S/. ':'symbol':'1.2-2' }}</td>
                                     <td class="!text-right">{{ inst.interest | currency:'S/. ':'symbol':'1.2-2' }}</td>
                                     <td class="!text-right">{{ inst.principalPart | currency:'S/. ':'symbol':'1.2-2' }}</td>
                                     <td class="!text-right">{{ inst.remainingBalance | currency:'S/. ':'symbol':'1.2-2' }}</td>
@@ -134,3 +146,72 @@
         </div>
     </div>
 </div>
+
+<!-- Modal para agregar cliente -->
+<ngx-custom-modal #customerModal class="no-footer">
+    <ng-template #modalHeader>
+        <div class="!font-medium">Agregar Cliente</div>
+    </ng-template>
+    <ng-template #modalBody>
+        <form [formGroup]="customerForm" class="text-sm" (ngSubmit)="saveCustomer()" ngNativeValidate>
+            <!-- Nombres -->
+            <div class="mb-5">
+                <label for="firstName">Nombres</label>
+                <input id="firstName"
+                       type="text"
+                       class="form-input"
+                       formControlName="firstName"
+                       required />
+            </div>
+
+            <!-- Apellidos -->
+            <div class="mb-5">
+                <label for="lastName">Apellidos</label>
+                <input id="lastName"
+                       type="text"
+                       class="form-input"
+                       formControlName="lastName"
+                       required />
+            </div>
+
+            <!-- Número de documento -->
+            <div class="mb-5">
+                <label for="documentNumber">Número de documento</label>
+                <input id="documentNumber"
+                       type="text"
+                       class="form-input"
+                       formControlName="documentNumber"
+                       required />
+            </div>
+
+            <!-- Email -->
+            <div class="mb-5">
+                <label for="email">Email</label>
+                <input id="email"
+                       type="email"
+                       class="form-input"
+                       formControlName="email" />
+            </div>
+
+            <!-- Teléfono -->
+            <div class="mb-5">
+                <label for="phone">Teléfono</label>
+                <input id="phone"
+                       type="text"
+                       class="form-input"
+                       formControlName="phone" />
+            </div>
+
+            <div class="mt-8 flex items-center justify-end">
+                <button type="button" class="btn btn-outline-danger" (click)="customerModal.close()">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="btn btn-primary ltr:ml-4 rtl:mr-4"
+                        [disabled]="!customerForm.valid">
+                    Agregar
+                </button>
+            </div>
+        </form>
+    </ng-template>
+</ngx-custom-modal>

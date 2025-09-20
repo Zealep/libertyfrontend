@@ -1,9 +1,9 @@
+import { Loan } from './../model/loan';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 
 import { catchError, throwError } from 'rxjs';
-import { Loan } from '../model/loan';
 import { Installment } from '../model/installment';
 
 
@@ -15,8 +15,8 @@ export class InstallmentService {
 
 constructor(private http: HttpClient) { }
 
-simulate() {
-    return this.http.get<Installment[]>(`${this.URL_BACKEND}/simulate`)
+simulate(loan: Loan) {
+    return this.http.post<Installment[]>(`${this.URL_BACKEND}/simulate`, loan)
     .pipe(catchError(this.handleErrorDefault));
  }
 
