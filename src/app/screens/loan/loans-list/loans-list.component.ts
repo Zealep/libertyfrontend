@@ -5,12 +5,13 @@ import { Router } from '@angular/router';
 import { DataTableModule } from '@bhplugin/ng-datatable';
 import { NgxCustomModalComponent } from 'ngx-custom-modal';
 import { Loan } from 'src/app/model/loan';
+import { LoansStatusPipe } from 'src/app/pipes/loans-status.pipe';
 import { LoanService } from 'src/app/service/loan.service';
 
 @Component({
     selector: 'app-loans-list',
     standalone: true,
-    imports: [DataTableModule, CommonModule, FormsModule, NgxCustomModalComponent, ReactiveFormsModule],
+    imports: [DataTableModule, CommonModule, FormsModule, NgxCustomModalComponent, ReactiveFormsModule, LoansStatusPipe],
     templateUrl: './loans-list.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
