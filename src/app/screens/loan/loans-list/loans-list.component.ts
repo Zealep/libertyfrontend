@@ -31,6 +31,7 @@ export class LoansListComponent {
         { field: 'plazo', title: 'Plazo Meses' },
         { field: 'fechaInicio', title: 'Fecha Inicio' },
         { field: 'tipoInteres', title: 'Tipo Interés' },
+        { field: 'esCortoPlazo', title: 'Plazo' }, // Nueva columna
         { field: 'estado', title: 'Estado' },
         { field: 'acciones', title: 'Acciones' },
     ];

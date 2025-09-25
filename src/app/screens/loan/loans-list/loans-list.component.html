@@ -31,7 +31,7 @@
                     </ng-template>
 
                     <ng-template slot="monto" let-value="data">
-                        <div class="font-semibold">{{ value.principal | currency:'USD':'symbol':'1.2-2' }}</div>
+                        <div class="font-semibold">{{ value.principal | currency:'S/. ':'symbol':'1.2-2' }}</div>
                     </ng-template>
 
                     <ng-template slot="tasa" let-value="data">
@@ -50,17 +50,27 @@
                         <div class="font-semibold">{{ value.interestType }}</div>
                     </ng-template>
 
-                  <ng-template slot="estado" let-value="data">
-    <span [ngClass]="{
-        'badge badge-outline-success': value.status === 'ACTIVE',
-        'badge badge-outline-danger': value.status === 'CLOSED',
-        'badge badge-outline-warning': value.status === 'CANCELLED',
-        'badge badge-outline-info': value.status === 'DEFAULTED',
-        'badge badge-outline-secondary': value.status === 'REFINANCED'
+                    <!-- Nuevo campo: Corto Plazo -->
+                    <ng-template slot="esCortoPlazo" let-value="data">
+                        <span class="badge" [ngClass]="{
+        'badge-outline-warning': value.isShortTerm,
+        'badge-outline-primary': !value.isShortTerm
     }">
-        {{ value.status | loansStatus }}
-    </span>
-</ng-template>
+                            {{ value.isShortTerm ? 'Corto' : 'Largo' }}
+                        </span>
+                    </ng-template>
+
+                    <ng-template slot="estado" let-value="data">
+                        <span class="badge" [ngClass]="{
+        'badge-outline-success': value.status === 'ACTIVE',
+        'badge-outline-danger': value.status === 'CLOSED',
+        'badge-outline-warning': value.status === 'CANCELLED',
+        'badge-outline-info': value.status === 'DEFAULTED',
+        'badge-outline-secondary': value.status === 'REFINANCED'
+    }">
+                            {{ value.status | loansStatus }}
+                        </span>
+                    </ng-template>
 
                     <ng-template slot="acciones" let-value="data">
 

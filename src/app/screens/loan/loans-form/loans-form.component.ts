@@ -14,6 +14,7 @@ import { CustomerService } from 'src/app/service/customer.service';
 import { InstallmentService } from 'src/app/service/installment.service';
 import { LoanService } from 'src/app/service/loan.service';
 import { ToastService } from 'src/app/service/toast.service';
+import { getTodayDate } from 'src/app/utils/utils';
 
 @Component({
     selector: 'app-loans-form',
@@ -61,7 +62,9 @@ export class LoansFormComponent {
             monthlyInterestRate: [null, [Validators.required, Validators.min(0)]],
             termMonths: [null, [Validators.required, Validators.min(1)]],
             interestType: ['SIMPLE', Validators.required],
-            disbursementDate: [null, Validators.required],
+            isShortTerm: [false], // Por defecto falso (largo plazo)
+            disbursementDate: [getTodayDate(), Validators.required],
+            shortTermEndDate: [null], // Campo condicional
         });
 
         this.customerForm = this.fb.group({
@@ -115,7 +118,9 @@ export class LoansFormComponent {
             monthlyInterestRate: form.monthlyInterestRate,
             termMonths: form.termMonths,
             interestType: form.interestType,
+            isShortTerm: form.isShortTerm,
             disbursementDate: form.disbursementDate,
+            shortTermEndDate: form.shortTermEndDate,
         };
 
         this.loanService.save(loan)
