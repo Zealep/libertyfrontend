@@ -1,1 +1,104 @@
-<p>customers-list works!</p>
+<div>
+    <div class="panel border-[#e0e6ed] px-0 pb-1.5 dark:border-[#1b2e4b]">
+        <div class="datatable invoice-table">
+            <h2 class="text-xl ml-4 mb-2">Gestión de Clientes</h2>
+            <div class="mb-4.5 flex flex-col gap-5 px-5 md:flex-row md:items-center">
+                <div class="flex items-center gap-2">
+                    <button type="button" class="btn btn-primary" (click)="editar(null)">
+                        <i class="fa fa-user-plus ltr:mr-2 rtl:ml-2"></i>
+                        Agregar Cliente
+                    </button>
+                </div>
+                <div>
+                    <input [(ngModel)]="search" type="text" class="form-input" placeholder="Buscar..." />
+                </div>
+            </div>
+
+            <ng-datatable
+                #datatable
+                [rows]="customers()"
+                [columns]="cols"
+                [sortable]="true"
+                [search]="search"
+                noDataContent="No se encontraron resultados"
+                paginationInfo="Mostrando {0} a {1} de {2} registros"
+                skin="whitespace-nowrap bh-table-hover"
+                firstArrow='<svg width="24" height="24" ... ></svg>'
+                lastArrow='<svg width="24" height="24" ... ></svg>'
+                previousArrow='<svg width="24" height="24" ... ></svg>'
+                nextArrow='<svg width="24" height="24" ... ></svg>'
+            >
+                <ng-template slot="id" let-value="data">
+                    <a class="font-semibold text-primary underline hover:no-underline">#{{ value.id }}</a>
+                </ng-template>
+                <ng-template slot="firstName" let-value="data">
+                    <div class="font-semibold">{{ value.firstName }}</div>
+                </ng-template>
+                <ng-template slot="lastName" let-value="data">
+                    <div class="font-semibold">{{ value.lastName }}</div>
+                </ng-template>
+                <ng-template slot="documentNumber" let-value="data">
+                    <div>{{ value.documentNumber }}</div>
+                </ng-template>
+                <ng-template slot="email" let-value="data">
+                    <div>{{ value.email }}</div>
+                </ng-template>
+                <ng-template slot="phone" let-value="data">
+                    <div>{{ value.phone }}</div>
+                </ng-template>
+                <ng-template slot="state" let-value="data">
+                    <div>{{ value.state }}</div>
+                </ng-template>
+                <ng-template slot="acciones" let-value="data">
+                    <div>
+                        <button type="button" class="hover:text-info" (click)="editar(value)">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <button type="button" class="hover:text-danger ml-3" (click)="eliminar(value)">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </ng-template>
+            </ng-datatable>
+        </div>
+
+        <!-- add customer modal -->
+        <ngx-custom-modal #addModal class="no-footer">
+            <ng-template #modalHeader>
+                <div class="!font-medium">{{ params.controls['id'].value ? 'Editar Cliente' : 'Agregar Cliente' }}</div>
+            </ng-template>
+            <ng-template #modalBody>
+                <form [formGroup]="params" class="text-sm" (ngSubmit)="guardar()" ngNativeValidate>
+                    <div class="mb-5">
+                        <label for="firstName">Nombre</label>
+                        <input id="firstName" type="text" class="form-input" formControlName="firstName" />
+                    </div>
+                    <div class="mb-5">
+                        <label for="lastName">Apellido</label>
+                        <input id="lastName" type="text" class="form-input" formControlName="lastName" />
+                    </div>
+                    <div class="mb-5">
+                        <label for="documentNumber">Documento</label>
+                        <input id="documentNumber" type="text" class="form-input" formControlName="documentNumber" />
+                    </div>
+                    <div class="mb-5">
+                        <label for="email">Email</label>
+                        <input id="email" type="email" class="form-input" formControlName="email" />
+                    </div>
+                    <div class="mb-5">
+                        <label for="phone">Teléfono</label>
+                        <input id="phone" type="text" class="form-input" formControlName="phone" />
+                    </div>
+                    <div class="mb-5">
+                        <label for="state">Estado</label>
+                        <input id="state" type="text" class="form-input" formControlName="state" />
+                    </div>
+                    <div class="mt-8 flex items-center justify-end">
+                        <button type="button" class="btn btn-outline-danger" (click)="addModal.close()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary ltr:ml-4 rtl:mr-4">{{ params.controls['id'].value ? 'Editar' : 'Agregar' }}</button>
+                    </div>
+                </form>
+            </ng-template>
+        </ngx-custom-modal>
+    </div>
+</div>
