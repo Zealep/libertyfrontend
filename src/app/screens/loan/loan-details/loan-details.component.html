@@ -1,0 +1,212 @@
+<div class="panel">
+  <!-- Header con información del préstamo -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <button class="btn btn-outline-primary" (click)="goBack()">
+        <i class="fa fa-arrow-left mr-2"></i>Volver a Préstamos
+      </button>
+      <h1 class="text-2xl font-bold">Detalle del Préstamo #{{ loan()?.id }}</h1>
+    </div>
+
+    <!-- Información del préstamo -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Cliente</h3>
+        <p>{{ loan()?.customer?.firstName }} {{ loan()?.customer?.lastName }}</p>
+        <p class="text-sm text-gray-600">{{ loan()?.customer?.email }}</p>
+      </div>
+      
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Monto del Préstamo</h3>
+        <p class="text-2xl font-bold text-primary">${{ loan()?.principal| number }}</p>
+        <p class="text-sm">Tasa: {{ loan()?.monthlyInterestRate }}%</p>
+      </div>
+      
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Estado</h3>
+        <span class="badge" [ngClass]="{'badge-success': loan()?.status === 'ACTIVE', 'badge-warning': loan()?.status === 'CLOSED', 'badge-danger': loan()?.status === 'INACTIVE'}">
+          {{ loan()?.status }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs para organizar información -->
+  <div class="panel">
+    <div class="mb-5">
+      <div class="inline-flex items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+        <button class="btn btn-sm tab-active" #installmentsTab>Cuotas Pendientes</button>
+        <button class="btn btn-sm" #paymentsTab>Historial de Pagos</button>
+      </div>
+    </div>
+
+    <!-- Tabla de cuotas -->
+    <div>
+      <h3 class="text-xl mb-4">Cuotas del Préstamo</h3>
+      <ng-datatable
+        [rows]="loan()?.installments ?? []"
+        [columns]="installmentCols"
+        [sortable]="true"
+        skin="whitespace-nowrap bh-table-hover"
+      >
+        <ng-template slot="installmentNumber" let-value="data">
+          <span class="font-semibold">Cuota {{ value.number }}</span>
+        </ng-template>
+        
+        <ng-template slot="dueDate" let-value="data">
+          <span>{{ value.dueDate | date:'dd/MM/yyyy' }}</span>
+        </ng-template>
+        
+        <ng-template slot="amount" let-value="data">
+          <span class="font-semibold">${{ value.amount | number }}</span>
+        </ng-template>
+        
+        <ng-template slot="status" let-value="data">
+          <span class="badge" 
+                [ngClass]="{'badge-outline-success rounded-full': value.status === 'PAID', 
+                           'badge-outline-warning rounded-full': value.status === 'PENDING',
+                           'badge-outline-danger rounded-full': value.status === 'OVERDUE'}">
+            {{ value.status | installmentStatus }}
+          </span>
+        </ng-template>
+        
+        <ng-template slot="actions" let-value="data">
+          <div *ngIf="value.status !== 'PAID'">
+            <button class="btn btn-sm btn-primary" (click)="payInstallment(value)">
+              <i class="fa fa-credit-card mr-1"></i>Pagar
+            </button>
+          </div>
+          <div *ngIf="value.status === 'PAID'" class="text-green-600">
+            <i class="fa fa-check-circle"></i> Pagado
+          </div>
+        </ng-template>
+      </ng-datatable>
+    </div>
+
+    <!-- Tabla de pagos (inicialmente oculta) -->
+    <div class="mt-8">
+      <h3 class="text-xl mb-4">Historial de Pagos</h3>
+      <ng-datatable
+        [rows]="payments()"
+        [columns]="paymentCols"
+        [sortable]="true"
+        skin="whitespace-nowrap bh-table-hover"
+      >
+        <!-- Templates para las columnas de pagos -->
+        <ng-template slot="paymentDate" let-value="data">
+          <span>{{ value.paymentDate | date:'dd/MM/yyyy' }}</span>
+        </ng-template>
+        <ng-template slot="amount" let-value="data">
+          <span class="font-semibold">${{ value.amount | number }}</span>
+        </ng-template>
+        <ng-template slot="paymentMethod" let-value="data">
+          <span>{{ value.paymentMethod | paymentsMethod }}</span>    
+        </ng-template>
+ 
+        <ng-template slot="installmentNumber" let-value="data">
+          <span>Cuota {{ value.installment?.number }}</span>
+        </ng-template>
+      </ng-datatable>
+    </div>
+  </div>
+
+  <ngx-custom-modal #paymentModal class="no-footer">
+    <ng-template #modalHeader>
+      <div class="!font-medium">Procesar Pago de Cuota</div>
+    </ng-template>
+    <ng-template #modalBody>
+      <form [formGroup]="paymentForm" class="text-sm" (ngSubmit)="processPayment()" ngNativeValidate>
+        
+        <!-- Información de la cuota -->
+        <div class="mb-5 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <h4 class="font-semibold mb-2">Información de la Cuota</h4>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span class="text-gray-600">Número de Cuota:</span>
+              <span class="font-semibold ml-2" id="cuotaNumber">{{ selectedInstallment?.number }}</span>
+            </div>
+            <div>
+              <span class="text-gray-600">Fecha Vencimiento:</span>
+              <span class="font-semibold ml-2">{{ selectedInstallment?.dueDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monto del pago -->
+        <div class="mb-5">
+          <label for="amount">Monto del Pago <span class="text-red-500">*</span></label>
+          <input 
+            id="amount" 
+            type="number" 
+            step="0.01"
+            min="0"
+            class="form-input" 
+            formControlName="amount" 
+            placeholder="0.00"
+            required />
+          <small class="text-gray-500">Monto de la cuota: ${{ selectedInstallment?.amount | number }}</small>
+        </div>
+
+        <!-- Método de pago -->
+        <div class="mb-5">
+          <label for="paymentMethod">Método de Pago <span class="text-red-500">*</span></label>
+          <select id="paymentMethod" class="form-select" formControlName="paymentMethod" required>
+            <option value="">Seleccione un método</option>
+            <option value="CASH">Efectivo</option>
+            <option value="BANK_TRANSFER">Transferencia Bancaria</option>
+            <option value="CREDIT_CARD">Tarjeta de Crédito</option>
+            <option value="DEBIT_CARD">Tarjeta de Débito</option>
+            <option value="CHECK">Cheque</option>
+            <option value="DIGITAL_WALLET">Billetera Digital</option>
+          </select>
+        </div>
+
+        <!-- Fecha de pago -->
+        <div class="mb-5">
+          <label for="paymentDate">Fecha de Pago <span class="text-red-500">*</span></label>
+          <input 
+            id="paymentDate" 
+            type="date" 
+            class="form-input" 
+            formControlName="paymentDate" 
+            required />
+        </div>
+
+        <!-- Número de referencia (opcional) -->
+        <div class="mb-5">
+          <label for="referenceNumber">Número de Referencia</label>
+          <input 
+            id="referenceNumber" 
+            type="text" 
+            class="form-input" 
+            formControlName="referenceNumber" 
+            placeholder="Ej: Número de transacción, cheque, etc." />
+          <small class="text-gray-500">Opcional: Para transferencias, cheques o pagos digitales</small>
+        </div>
+
+        <!-- Notas adicionales -->
+        <div class="mb-5">
+          <label for="notes">Notas Adicionales</label>
+          <textarea 
+            id="notes" 
+            rows="3" 
+            class="form-textarea" 
+            formControlName="notes" 
+            placeholder="Observaciones sobre el pago (opcional)"></textarea>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="mt-8 flex items-center justify-end gap-3">
+          <button type="button" class="btn btn-outline-danger" (click)="paymentModal.close()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="paymentForm.invalid || processing">
+            <i class="fa fa-credit-card mr-2" *ngIf="!processing"></i>
+            <i class="fa fa-spinner fa-spin mr-2" *ngIf="processing"></i>
+            {{ processing ? 'Procesando...' : 'Procesar Pago' }}
+          </button>
+        </div>
+      </form>
+    </ng-template>
+  </ngx-custom-modal>
+</div>

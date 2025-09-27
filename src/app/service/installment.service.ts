@@ -24,4 +24,8 @@ simulate(loan: Loan) {
   private handleErrorDefault(error: HttpErrorResponse) {
   return throwError(() => error.error);
 }
+getByLoanId(loanId: number) {
+    return this.http.get<Installment[]>(`${this.URL_BACKEND}/loan/${loanId}`)
+    .pipe(catchError(this.handleErrorDefault));
+  }
 }

@@ -38,4 +38,9 @@ delete(id: number) {
   private handleErrorDefault(error: HttpErrorResponse) {
   return throwError(() => error.error);
 }
+
+getByLoanId(loanId: number) {
+    return this.http.get<Payment[]>(`${this.URL_BACKEND}/loan/${loanId}`)
+    .pipe(catchError(this.handleErrorDefault));
+  }
 }

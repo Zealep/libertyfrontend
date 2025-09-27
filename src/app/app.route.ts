@@ -15,6 +15,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./screens/loan/loans-list/loans-list.component').then((c) => c.LoansListComponent),
             },
             {
+                path: 'loans/:id',
+                loadComponent: () => import('./screens/loan/loan-details/loan-details.component').then((c) => c.LoanDetailsComponent),
+            },
+            {
                 path: 'loan/form',
                 loadComponent: () => import('./screens/loan/loans-form/loans-form.component').then((c) => c.LoansFormComponent),
             },

@@ -66,4 +66,8 @@ export class LoansListComponent {
         });
       }
     }
+
+    viewLoanDetails(loan: Loan) {
+  this.router.navigate(['/loans', loan.id]);
+}
 }
