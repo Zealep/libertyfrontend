@@ -63,10 +63,10 @@
                     <ng-template slot="estado" let-value="data">
                         <span class="badge" [ngClass]="{
         'badge-outline-success': value.status === 'ACTIVE',
-        'badge-outline-danger': value.status === 'CLOSED',
-        'badge-outline-warning': value.status === 'CANCELLED',
-        'badge-outline-info': value.status === 'DEFAULTED',
-        'badge-outline-secondary': value.status === 'REFINANCED'
+        'badge-outline-info': value.status === 'CLOSED',
+        'badge-outline-danger': value.status === 'CANCELLED',
+        'badge-outline-secondary': value.status === 'DEFAULTED',
+        'badge-outline-warning': value.status === 'REFINANCED'
     }">
                             {{ value.status | loansStatus }}
                         </span>

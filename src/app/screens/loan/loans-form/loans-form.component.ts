@@ -5,6 +5,8 @@ import { DataTableModule } from '@bhplugin/ng-datatable';
 import { NgLabelTemplateDirective, NgOptionTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
 import { FlatpickrDirective } from 'angularx-flatpickr';
 import { error } from 'console';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { NgxCustomModalComponent } from 'ngx-custom-modal';
 import { catchError, EMPTY } from 'rxjs';
 import { Customer } from 'src/app/model/customer';
@@ -168,4 +170,187 @@ export class LoansFormComponent {
             });
         }
     }
+
+        // Método para calcular el total de cuotas
+    getTotalAmount(): number {
+        const installments = this.installments();
+        return installments.reduce((total, installment) => total + (Number(installment.amount) || 0), 0);
+    }
+
+    // Método para calcular el total de intereses
+    getTotalInterest(): number {
+        const installments = this.installments();
+        return installments.reduce((total, installment) => total + (Number(installment.interest) || 0), 0);
+    }
+
+    // Método para calcular el total del capital pagado
+    getTotalCapital(): number {
+        const installments = this.installments();
+        return installments.reduce((total, installment) => total + (Number(installment.principalPart) || 0), 0);
+    }
+
+    exportToPDF(): void {
+        const form = this.loanForm.value;
+        const installments = this.installments();
+
+        if (!installments || installments.length === 0) {
+            this.toastService.showMessage('No hay cuotas para exportar', 'warning');
+            return;
+        }
+
+        // Crear nuevo documento PDF
+        const pdf = new jsPDF();
+
+        // Configuración del documento
+        const pageWidth = pdf.internal.pageSize.width;
+        const pageHeight = pdf.internal.pageSize.height;
+        let yPosition = 20;
+
+        // Título principal
+        pdf.setFontSize(18);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('TABLA DE AMORTIZACIÓN - PRÉSTAMO', pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 15;
+
+        // Línea separadora
+        pdf.setLineWidth(0.5);
+        pdf.line(20, yPosition, pageWidth - 20, yPosition);
+        yPosition += 15;
+
+        // Datos del préstamo (cabecera)
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('INFORMACIÓN DEL PRÉSTAMO', 20, yPosition);
+        yPosition += 10;
+
+        // Obtener información del cliente
+        const selectedCustomer = this.customers().find(c => c.id === form.customer);
+        const customerName = selectedCustomer ?
+            `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : 'No seleccionado';
+
+        // Datos en dos columnas
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+
+        const leftColumn = 20;
+        const rightColumn = pageWidth / 2 + 10;
+
+        // Columna izquierda
+        pdf.text(`Cliente: ${customerName}`, leftColumn, yPosition);
+        pdf.text(`Monto: S/. ${parseFloat(form.principal || 0).toLocaleString('es-PE', {minimumFractionDigits: 2})}`, leftColumn, yPosition + 6);
+        pdf.text(`Tasa mensual: ${form.monthlyInterestRate}%`, leftColumn, yPosition + 12);
+        pdf.text(`Tipo de interés: ${form.interestType}`, leftColumn, yPosition + 18);
+
+        // Columna derecha
+        pdf.text(`Plazo: ${form.termMonths} meses`, rightColumn, yPosition);
+        pdf.text(`Fecha desembolso: ${new Date(form.disbursementDate).toLocaleDateString('es-PE')}`, rightColumn, yPosition + 6);
+        pdf.text(`Tipo de préstamo: ${form.isShortTerm ? 'Corto plazo' : 'Largo plazo'}`, rightColumn, yPosition + 12);
+
+        if (form.isShortTerm && form.shortTermEndDate) {
+            pdf.text(`Fecha fin: ${new Date(form.shortTermEndDate).toLocaleDateString('es-PE')}`, rightColumn, yPosition + 18);
+        }
+
+        yPosition += 30;
+
+        // Resumen financiero
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('RESUMEN FINANCIERO', 20, yPosition);
+        yPosition += 10;
+
+        pdf.setFont('helvetica', 'normal');
+        const totalAmount = this.getTotalAmount();
+        const totalInterest = this.getTotalInterest();
+        const principal = parseFloat(form.principal || 0);
+
+        /*
+        pdf.text(`Total a pagar: S/. ${totalAmount.toLocaleString('es-PE', {minimumFractionDigits: 2})}`, leftColumn, yPosition);
+        pdf.text(`Total intereses: S/. ${totalInterest.toLocaleString('es-PE', {minimumFractionDigits: 2})}`, rightColumn, yPosition);
+        pdf.text(`Capital inicial: S/. ${principal.toLocaleString('es-PE', {minimumFractionDigits: 2})}`, leftColumn, yPosition + 6);
+        pdf.text(`Rentabilidad: S/. ${totalInterest.toLocaleString('es-PE', {minimumFractionDigits: 2})}`, rightColumn, yPosition + 6);
+
+        yPosition += 20;
+        */
+        // Tabla de cuotas
+        const tableColumns = ['N°', 'Fecha Venc.', 'Cuota (S/.)', 'Interés (S/.)', 'Capital (S/.)', 'Saldo (S/.)'];
+        const tableRows: any[][] = [];
+
+        installments.forEach((installment, index) => {
+            tableRows.push([
+                (index + 1).toString(),
+                new Date(installment.dueDate).toLocaleDateString('es-PE'),
+                (typeof installment.amount === 'number' ? installment.amount : Number(installment.amount))?.toFixed(2) || '0.00',
+                (typeof installment.interest === 'number' ? installment.interest : Number(installment.interest))?.toFixed(2) || '0.00',
+                (typeof installment.principalPart === 'number' ? installment.principalPart : Number(installment.principalPart))?.toFixed(2) || '0.00',
+                (typeof installment.remainingBalance === 'number' ? installment.remainingBalance : Number(installment.remainingBalance))?.toFixed(2) || '0.00'
+            ]);
+        });
+
+        // Agregar fila de totales
+        tableRows.push([
+            'TOTAL',
+            '',
+            totalAmount.toFixed(2),
+            totalInterest.toFixed(2),
+            principal.toFixed(2),
+            ''
+        ]);
+
+        // Generar tabla con autoTable
+        autoTable(pdf, {
+            startY: yPosition,
+            head: [tableColumns],
+            body: tableRows,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [41, 128, 185], // Azul
+                textColor: 255,
+                fontStyle: 'bold',
+                fontSize: 9
+            },
+            bodyStyles: {
+                fontSize: 8,
+                textColor: 50
+            },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245]
+            },
+            footStyles: {
+                fillColor: [231, 76, 60], // Rojo para totales
+                textColor: 255,
+                fontStyle: 'bold'
+            },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 15 },
+                1: { halign: 'center', cellWidth: 25 },
+                2: { halign: 'right', cellWidth: 25 },
+                3: { halign: 'right', cellWidth: 25 },
+                4: { halign: 'right', cellWidth: 25 },
+                5: { halign: 'right', cellWidth: 25 }
+            },
+            margin: { top: 10, left: 20, right: 20 },
+            didParseCell: (data) => {
+                // Resaltar la fila de totales
+                if (data.row.index === tableRows.length - 1) {
+                    data.cell.styles.fillColor = [52, 152, 219];
+                    data.cell.styles.textColor = 255;
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
+        });
+
+        // Footer con fecha de generación
+        const finalY = (pdf as any).lastAutoTable.finalY + 20;
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'italic');
+        pdf.text(`Documento generado el: ${new Date().toLocaleString('es-PE')}`,
+                 pageWidth / 2, finalY > pageHeight - 20 ? pageHeight - 10 : finalY,
+                 { align: 'center' });
+
+        // Guardar PDF
+        const fileName = `Prestamo_${customerName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(fileName);
+
+        this.toastService.showMessage('PDF exportado correctamente', 'success');
+    }
+
 }

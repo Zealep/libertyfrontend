@@ -88,54 +88,96 @@
                         formControlName="disbursementDate" required />
                 </div>
 
-                <!-- Botón para simular -->
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="btn btn-outline-primary" (click)="simulateInstallments()"
-                        [disabled]="!loanForm.valid">
-                        Simular cuotas
-                    </button>
-                </div>
+               <div class="flex justify-end mt-6 gap-3">
+    <button type="button"
+            class="btn btn-outline-success"
+            (click)="exportToPDF()"
+            [disabled]="!installments() || installments().length === 0"
+            title="Exportar tabla de cuotas a PDF">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+        </svg>
+        Exportar PDF
+    </button>
+    <button type="button"
+            class="btn btn-secondary"
+            (click)="simulateInstallments()"
+            [disabled]="!loanForm.valid">
+        Simular cuotas
+    </button>
+</div>
 
                 <!-- Tabla de cuotas (simulador) -->
                 <div *ngIf="installments() && installments().length" class="mt-6">
                     <h5 class="text-lg font-medium mb-4">Tabla de cuotas simulada</h5>
-                    <div class="table-responsive">
-                        <table class="table-hover">
-                            <thead>
-                                <tr>
-                                    <th class="!text-center">#</th>
-                                    <th>Fecha</th>
-                                    <th class="!text-right">Cuota</th>
-                                    <th class="!text-right">Interés</th>
-                                    <th class="!text-right">Capital</th>
-                                    <th class="!text-right">Saldo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let inst of installments(); let i = index">
-                                    <td class="!text-center">{{ i + 1 }}</td>
-                                    <td>{{ inst.dueDate | date:'dd/MM/yyyy' }}</td>
-                                    <td class="!text-right">{{ inst.amount| currency:'S/. ':'symbol':'1.2-2' }}</td>
-                                    <td class="!text-right">{{ inst.interest | currency:'S/. ':'symbol':'1.2-2' }}</td>
-                                    <td class="!text-right">{{ inst.principalPart | currency:'S/. ':'symbol':'1.2-2' }}
-                                    </td>
-                                    <td class="!text-right">{{ inst.remainingBalance | currency:'S/. ':'symbol':'1.2-2'
-                                        }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
-                <!-- Botón para registrar -->
-                <div class="flex justify-end mt-6">
-                    <button type="submit" class="btn btn-primary" [disabled]="!loanForm.valid">
-                        Registrar préstamo
-                    </button>
-                </div>
-            </form>
+                     <!-- Resumen totales -->
+    <div class="mb-4 p-4 bg-gray-50 rounded-lg border">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div class="text-center">
+                <p class="text-gray-600 mb-1">Total Cuotas</p>
+                <p class="font-semibold text-lg text-blue-600">
+                    {{ getTotalAmount() | currency:'S/. ':'symbol':'1.2-2' }}
+                </p>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-600 mb-1">Total Intereses</p>
+                <p class="font-semibold text-lg text-green-600">
+                    {{ getTotalInterest() | currency:'S/. ':'symbol':'1.2-2' }}
+                </p>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-600 mb-1">Capital Inicial</p>
+                <p class="font-semibold text-lg text-gray-700">
+                    {{ loanForm.get('principal')?.value | currency:'S/. ':'symbol':'1.2-2' }}
+                </p>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-600 mb-1">Ganancia</p>
+                <p class="font-semibold text-lg text-orange-600">
+                    {{ getTotalInterest() | currency:'S/. ':'symbol':'1.2-2' }}
+                </p>
+            </div>
         </div>
     </div>
+
+                       <!-- Contenedor con altura fija y scroll -->
+    <div class="border rounded-lg overflow-hidden">
+        <div class="table-responsive max-h-80 overflow-y-auto">
+            <table class="table-hover">
+                <thead class="sticky top-0 bg-white z-10 border-b">
+                    <tr>
+                        <th class="!text-center bg-gray-50">#</th>
+                        <th class="bg-gray-50">Fecha</th>
+                        <th class="!text-right bg-gray-50">Cuota</th>
+                        <th class="!text-right bg-gray-50">Interés</th>
+                        <th class="!text-right bg-gray-50">Capital</th>
+                        <th class="!text-right bg-gray-50">Saldo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let inst of installments(); let i = index">
+                        <td class="!text-center">{{ i + 1 }}</td>
+                        <td>{{ inst.dueDate | date:'dd/MM/yyyy' }}</td>
+                        <td class="!text-right">{{ inst.amount | currency:'S/. ':'symbol':'1.2-2' }}</td>
+                        <td class="!text-right">{{ inst.interest | currency:'S/. ':'symbol':'1.2-2' }}</td>
+                        <td class="!text-right">{{ inst.principalPart | currency:'S/. ':'symbol':'1.2-2' }}</td>
+                        <td class="!text-right">{{ inst.remainingBalance | currency:'S/. ':'symbol':'1.2-2' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+</div>
+
+<!-- Botón para registrar -->
+<div class="flex justify-end mt-6">
+    <button type="submit" class="btn btn-primary" [disabled]="!loanForm.valid">
+        Registrar préstamo
+    </button>
 </div>
 
 <!-- Modal para agregar cliente -->
