@@ -1,0 +1,369 @@
+<div>
+    <div class="panel border-[#e0e6ed] px-0 pb-1.5 dark:border-[#1b2e4b]">
+        <div class="datatable invoice-table">
+            <h2 class="text-xl ml-4 mb-4">Gestión de Transacciones</h2>
+
+            <!-- Resumen financiero -->
+            <div class="mb-4 mx-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-secondary/10 p-4 rounded-lg border">
+                        <div class="text-center">
+                            <p class="text-secondary font-semibold">Total Ingresos</p>
+                            <p class="text-2xl font-bold text-secondary">
+                                {{ getTotalIncome() | currency:'S/. ':'symbol':'1.2-2' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-secondary/10 p-4 rounded-lg border">
+                        <div class="text-center">
+                            <p class="text-secondary font-semibold">Total Gastos</p>
+                            <p class="text-2xl font-bold text-secondary">
+                                {{ getTotalExpenses() | currency:'S/. ':'symbol':'1.2-2' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-secondary/10 p-4 rounded-lg border">
+                        <div class="text-center">
+                            <p class="text-secondary font-semibold">Balance Total</p>
+                            <p class="text-2xl font-bold text-secondary">
+                                {{ getTotalBalance() | currency:'S/. ':'symbol':'1.2-2' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción y filtros -->
+            <div class="mb-4.5 flex flex-col gap-5 px-5 md:flex-row md:items-center">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" class="btn btn-primary" (click)="addIncome()">
+                        <i class="fa fa-plus mr-2"></i>
+                        Ingreso
+                    </button>
+                    <button type="button" class="btn btn-primary" (click)="addExpense()">
+                        <i class="fa fa-minus mr-2"></i>
+                        Gasto
+                    </button>
+                    <button type="button" class="btn btn-primary" (click)="exportToPDF()">
+                        <i class="fa fa-download mr-2"></i>
+                        Exportar
+                    </button>
+                </div>
+
+                <!-- Búsqueda -->
+                <div class="flex-1">
+                    <input [(ngModel)]="search"
+                           type="text"
+                           class="form-input"
+                           placeholder="Buscar por descripción, categoría..." />
+                </div>
+
+                <!-- Filtros -->
+                <div class="flex gap-2">
+                    <select [(ngModel)]="typeFilter" class="form-select">
+                        <option value="">Todos los tipos</option>
+                        <option value="INCOME">Ingresos</option>
+                        <option value="EXPENSE">Gastos</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- DataTable -->
+            <ng-datatable #datatable
+                [rows]="transactions()"
+                [columns]="cols"
+                [sortable]="true"
+                [search]="search"
+                noDataContent="No se encontraron transacciones"
+                paginationInfo="Mostrando {0} a {1} de {2} registros"
+                skin="whitespace-nowrap bh-table-hover">
+
+                <ng-template slot="id" let-value="data">
+                    <span class="font-semibold text-primary">#{{ value.id }}</span>
+                </ng-template>
+
+                <ng-template slot="fecha" let-value="data">
+                    <div class="font-semibold">{{ value.transactionDate | date:'dd/MM/yyyy' }}</div>
+                </ng-template>
+
+                <ng-template slot="descripcion" let-value="data">
+                    <div class="font-semibold">{{ value.description }}</div>
+                    <div class="text-sm text-gray-500" *ngIf="value.notes">{{ value.notes }}</div>
+                </ng-template>
+
+                <ng-template slot="categoria" let-value="data">
+                    <span class="badge badge-outline-info">{{ value.category.name }}</span>
+                </ng-template>
+
+                <ng-template slot="tipo" let-value="data">
+                    <span class="badge badge-outline-primary">
+                        <i class="fa mr-1" [ngClass]="{
+                            'fa-arrow-up': value.type === 'INCOME',
+                            'fa-arrow-down': value.type === 'EXPENSE'
+                        }"></i>
+                        {{ value.type | transactionType }}
+                    </span>
+                </ng-template>
+
+                <ng-template slot="monto" let-value="data">
+                    <div class="font-semibold text-right text-secondary">
+                        {{ value.type === 'EXPENSE' ? '-' : '+' }}{{ value.amount | currency:'S/. ':'symbol':'1.2-2' }}
+                    </div>
+                </ng-template>
+
+                <ng-template slot="metodo" let-value="data">
+                    <span class="text-sm">{{ value.paymentMethod | paymentsMethod }}</span>
+                </ng-template>
+
+                <ng-template slot="acciones" let-value="data">
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="hover:text-primary" (click)="editar(value)" title="Editar">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <button type="button" class="hover:text-danger" (click)="eliminar(value)" title="Eliminar">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </ng-template>
+
+            </ng-datatable>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para transacciones -->
+<ngx-custom-modal #transactionModal class="no-footer" size="lg">
+    <ng-template #modalHeader>
+        <h4 class="font-semibold text-primary text-lg">
+            {{ isEditing ? 'Editar Transacción' : 'Nueva Transacción' }}
+        </h4>
+    </ng-template>
+
+    <ng-template #modalBody>
+        <form [formGroup]="transactionForm" (ngSubmit)="guardarTransaccion()" class="space-y-4">
+            <!-- Tipo de Transacción -->
+            <div>
+                <label class="font-semibold text-gray-700">Tipo de Transacción *</label>
+                <div class="flex gap-6 mt-2">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="radio"
+                               formControlName="type"
+                               value="INCOME"
+                               class="form-radio text-primary mr-2" />
+                        <span class="text-primary font-semibold">
+                            <i class="fa fa-arrow-up mr-1"></i>
+                            Ingreso
+                        </span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="radio"
+                               formControlName="type"
+                               value="EXPENSE"
+                               class="form-radio text-primary mr-2" />
+                        <span class="text-primary font-semibold">
+                            <i class="fa fa-arrow-down mr-1"></i>
+                            Gasto
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Grid de campos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Monto -->
+                <div>
+                    <label for="amount" class="font-semibold text-gray-700">Monto *</label>
+                    <input id="amount"
+                           type="number"
+                           step="0.01"
+                           min="0"
+                           class="form-input mt-1"
+                           formControlName="amount"
+                           placeholder="0.00" />
+                </div>
+
+                <!-- Fecha -->
+                <div>
+                    <label for="transactionDate" class="font-semibold text-gray-700">Fecha *</label>
+                    <input id="transactionDate"
+                           type="date"
+                           class="form-input mt-1"
+                           formControlName="transactionDate" />
+                </div>
+
+                 <!-- Categoría -->
+                <div>
+                    <label for="category" class="font-semibold text-gray-700">Categoría *</label>
+                    <div class="flex gap-2 mt-1">
+                        <ng-select formControlName="category"
+                                   [items]="filteredCategories()"
+                                   bindLabel="name"
+
+                                   placeholder="Seleccionar categoría"
+                                   [clearable]="false"
+                                   class="flex-1"
+                                   [class.border-danger]="transactionForm.get('category')?.invalid && transactionForm.get('category')?.touched">
+                            <ng-template ng-label-tmp let-item="item">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full" [style.background-color]="item.color || '#3b82f6'"></div>
+                                    {{ item.name }}
+                                </div>
+                            </ng-template>
+                            <ng-template ng-option-tmp let-item="item">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full" [style.background-color]="item.color || '#3b82f6'"></div>
+                                    <div>
+                                        <div class="font-semibold">{{ item.name }}</div>
+                                        <div class="text-sm text-gray-500" *ngIf="item.description">{{ item.description }}</div>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </ng-select>
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                (click)="openCategoryModal()">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="text-danger text-sm mt-1"
+                         *ngIf="transactionForm.get('category')?.invalid && transactionForm.get('category')?.touched">
+                        La categoría es requerida
+                    </div>
+                </div>
+
+                <!-- Método de Pago -->
+                <div>
+                    <label for="paymentMethod" class="font-semibold text-gray-700">Método de Pago *</label>
+                    <select id="paymentMethod"
+                            class="form-select mt-1"
+                            formControlName="paymentMethod">
+                        <option value="CASH">Efectivo</option>
+                        <option value="BANK_TRANSFER">Transferencia Bancaria</option>
+                        <option value="CREDIT_CARD">Tarjeta de Crédito</option>
+                        <option value="DEBIT_CARD">Tarjeta de Débito</option>
+                        <option value="CHECK">Cheque</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Descripción -->
+            <div>
+                <label for="description" class="font-semibold text-gray-700">Descripción *</label>
+                <input id="description"
+                       type="text"
+                       class="form-input mt-1"
+                       formControlName="description"
+                       placeholder="Ej: Pago de servicios, Venta de producto..." />
+            </div>
+
+            <!-- Referencia -->
+            <div>
+                <label for="reference" class="font-semibold text-gray-700">Referencia</label>
+                <input id="reference"
+                       type="text"
+                       class="form-input mt-1"
+                       formControlName="reference"
+                       placeholder="Número de transacción, cheque, etc." />
+            </div>
+
+            <!-- Notas -->
+            <div>
+                <label for="notes" class="font-semibold text-gray-700">Notas</label>
+                <textarea id="notes"
+                          rows="2"
+                          class="form-textarea mt-1"
+                          formControlName="notes"
+                          placeholder="Información adicional..."></textarea>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end gap-3 pt-4 border-t">
+                <button type="button" class="btn btn-outline-primary" (click)="transactionModal.close()">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="btn btn-primary"
+                        [disabled]="transactionForm.invalid">
+                    <i class="fa fa-save mr-2"></i>
+                    {{ isEditing ? 'Actualizar' : 'Guardar' }}
+                </button>
+            </div>
+        </form>
+    </ng-template>
+</ngx-custom-modal>
+
+<!-- Modal para categorías -->
+<ngx-custom-modal #categoryModal class="no-footer">
+    <ng-template #modalHeader>
+        <h4 class="font-semibold text-primary text-lg">Nueva Categoría</h4>
+    </ng-template>
+
+    <ng-template #modalBody>
+        <form [formGroup]="categoryForm" (ngSubmit)="guardarCategoria()">
+            <div class="space-y-4">
+                <!-- Nombre -->
+                <div>
+                    <label for="categoryName" class="font-semibold text-gray-700">Nombre *</label>
+                    <input id="categoryName"
+                           type="text"
+                           class="form-input mt-1"
+                           formControlName="name"
+                           placeholder="Ej: Alimentación, Servicios..." />
+                </div>
+
+              <div class="flex gap-2">
+    <ng-select [(ngModel)]="typeFilter"
+               [items]="transactionTypeOptions"
+               bindLabel="label"
+               bindValue="value"
+               placeholder="Todos los tipos"
+               [clearable]="true"
+               class="w-48">
+        <ng-template ng-label-tmp let-item="item">
+            <div class="flex items-center gap-2">
+                <i class="fa" [ngClass]="item.icon"></i>
+                {{ item.label }}
+            </div>
+        </ng-template>
+        <ng-template ng-option-tmp let-item="item">
+            <div class="flex items-center gap-2">
+                <i class="fa" [ngClass]="item.icon"></i>
+                {{ item.label }}
+            </div>
+        </ng-template>
+    </ng-select>
+</div>
+
+                <!-- Descripción -->
+                <div>
+                    <label for="categoryDescription" class="font-semibold text-gray-700">Descripción</label>
+                    <textarea id="categoryDescription"
+                              rows="2"
+                              class="form-textarea mt-1"
+                              formControlName="description"
+                              placeholder="Descripción de la categoría..."></textarea>
+                </div>
+
+                <!-- Color -->
+                <div>
+                    <label for="categoryColor" class="font-semibold text-gray-700">Color</label>
+                    <input id="categoryColor"
+                           type="color"
+                           class="form-input mt-1 h-10"
+                           formControlName="color" />
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" class="btn btn-outline-primary" (click)="categoryModal.close()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid">
+                    Crear Categoría
+                </button>
+            </div>
+        </form>
+    </ng-template>
+</ngx-custom-modal>

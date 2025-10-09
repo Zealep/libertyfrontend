@@ -11,12 +11,18 @@ const initialMenus: Menu[] = [
         icono: 'fa fa-users',
         url: '/loans',
     },
+     {
+        nombre: 'Finanzas',
+        icono: 'fa fa-chart-line',
+        url: '/finance',
+    },
     {
         nombre: 'Mantenimiento',
         icono: 'fa fa-cog',
         url: '',
         subMenus: [
             { nombre: 'Clientes', url: '/customers' },
+            { nombre: 'Categorias', url: '/categories' },
         ],
     },
 ];

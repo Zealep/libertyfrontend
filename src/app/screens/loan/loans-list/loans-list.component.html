@@ -23,35 +23,35 @@
                     previousArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M15 5L9 12L15 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'
                     nextArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'>
                     <ng-template slot="id" let-value="data">
-                        <a class="font-semibold text-primary underline hover:no-underline" (click)="viewLoanDetails(value)">{{ value.id }}</a>
+                        <a class="font-semibold text-primary underline hover:no-underline hover:cursor-pointer" (click)="viewLoanDetails(value)">{{ value.id }}</a>
                     </ng-template>
 
-                    <ng-template slot="cliente" let-value="data">
+                    <ng-template slot="customer.firstName" let-value="data">
                         <div class="font-semibold">{{ value.customer.firstName }} {{ value.customer.lastName }}</div>
                     </ng-template>
 
-                    <ng-template slot="monto" let-value="data">
+                    <ng-template slot="principal" let-value="data">
                         <div class="font-semibold">{{ value.principal | currency:'S/. ':'symbol':'1.2-2' }}</div>
                     </ng-template>
 
-                    <ng-template slot="tasa" let-value="data">
+                    <ng-template slot="monthlyInterestRate" let-value="data">
                         <div class="font-semibold">{{ value.monthlyInterestRate }}%</div>
                     </ng-template>
 
-                    <ng-template slot="plazo" let-value="data">
+                    <ng-template slot="termMonths" let-value="data">
                         <div class="font-semibold">{{ value.termMonths }} meses</div>
                     </ng-template>
 
-                    <ng-template slot="fechaInicio" let-value="data">
+                    <ng-template slot="disbursementDate" let-value="data">
                         <div class="font-semibold">{{ value.disbursementDate | date:'dd/MM/yyyy' }}</div>
                     </ng-template>
 
-                    <ng-template slot="tipoInteres" let-value="data">
+                    <ng-template slot="interestType" let-value="data">
                         <div class="font-semibold">{{ value.interestType }}</div>
                     </ng-template>
 
                     <!-- Nuevo campo: Corto Plazo -->
-                    <ng-template slot="esCortoPlazo" let-value="data">
+                    <ng-template slot="isShortTerm" let-value="data">
                         <span class="badge" [ngClass]="{
         'badge-outline-warning': value.isShortTerm,
         'badge-outline-primary': !value.isShortTerm
@@ -60,7 +60,7 @@
                         </span>
                     </ng-template>
 
-                    <ng-template slot="estado" let-value="data">
+                    <ng-template slot="status" let-value="data">
                         <span class="badge" [ngClass]="{
         'badge-outline-success': value.status === 'ACTIVE',
         'badge-outline-info': value.status === 'CLOSED',
@@ -76,11 +76,8 @@
 
                         <div>
 
-                            <button type="button" class="hover:text-info" (click)="editar(value)">
-                                <i class="fa fa-edit"></i>
-                            </button>
 
-                            <button type="button" class="hover:text-danger ml-3" (click)="eliminar(value)">
+                            <button type="button" class="hover:text-danger ml-3" (click)="eliminar(value.id)">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </div>

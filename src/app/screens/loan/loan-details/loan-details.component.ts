@@ -13,11 +13,12 @@ import { PaymentService } from 'src/app/service/payment.service';
 import { InstallmentStatusPipe } from 'src/app/pipes/installment-status.pipe';
 import { ToastService } from 'src/app/service/toast.service';
 import { PaymentsMethodPipe } from 'src/app/pipes/payments-method.pipe';
+import { LoansStatusPipe } from 'src/app/pipes/loans-status.pipe';
 
 @Component({
   selector: 'app-loan-details',
   standalone: true,
-  imports: [CommonModule, DataTableModule, NgxCustomModalComponent, ReactiveFormsModule,InstallmentStatusPipe,PaymentsMethodPipe],
+  imports: [CommonModule, DataTableModule, NgxCustomModalComponent, ReactiveFormsModule,InstallmentStatusPipe,PaymentsMethodPipe,LoansStatusPipe],
   templateUrl: './loan-details.component.html'
 })
 export class LoanDetailsComponent implements OnInit {
@@ -77,7 +78,7 @@ export class LoanDetailsComponent implements OnInit {
   loadLoanDetails() {
     this.loading.set(true);
     const id = this.loanId();
-    
+
     // Cargar información del préstamo
     this.loanService.getById(id).subscribe(loan => {
       this.loan.set(loan);

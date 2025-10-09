@@ -15,17 +15,17 @@
         <p>{{ loan()?.customer?.firstName }} {{ loan()?.customer?.lastName }}</p>
         <p class="text-sm text-gray-600">{{ loan()?.customer?.email }}</p>
       </div>
-      
+
       <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
         <h3 class="text-lg font-semibold mb-2">Monto del Préstamo</h3>
-        <p class="text-2xl font-bold text-primary">${{ loan()?.principal| number }}</p>
+        <p class="text-2xl font-bold text-primary">S/. {{ loan()?.principal | number }}</p>
         <p class="text-sm">Tasa: {{ loan()?.monthlyInterestRate }}%</p>
       </div>
-      
+
       <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
         <h3 class="text-lg font-semibold mb-2">Estado</h3>
-        <span class="badge" [ngClass]="{'badge-success': loan()?.status === 'ACTIVE', 'badge-warning': loan()?.status === 'CLOSED', 'badge-danger': loan()?.status === 'INACTIVE'}">
-          {{ loan()?.status }}
+        <span class="badge" [ngClass]="{'bg-success': loan()?.status === 'ACTIVE', 'bg-warning': loan()?.status === 'CLOSED', 'bg-danger': loan()?.status === 'CANCELLED'}">
+          {{ loan()?.status | loansStatus  }}
         </span>
       </div>
     </div>
@@ -33,12 +33,7 @@
 
   <!-- Tabs para organizar información -->
   <div class="panel">
-    <div class="mb-5">
-      <div class="inline-flex items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-        <button class="btn btn-sm tab-active" #installmentsTab>Cuotas Pendientes</button>
-        <button class="btn btn-sm" #paymentsTab>Historial de Pagos</button>
-      </div>
-    </div>
+
 
     <!-- Tabla de cuotas -->
     <div>
@@ -47,29 +42,34 @@
         [rows]="loan()?.installments ?? []"
         [columns]="installmentCols"
         [sortable]="true"
-        skin="whitespace-nowrap bh-table-hover"
+        noDataContent="No se encontraron resultados" paginationInfo="Mostrando {0} a {1} de {2} registros"
+                    skin="whitespace-nowrap bh-table-hover"
+                    firstArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M13 19L7 12L13 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path opacity="0.5" d="M16.9998 19L10.9998 12L16.9998 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'
+                    lastArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M11 19L17 12L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path opacity="0.5" d="M6.99976 19L12.9998 12L6.99976 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg> '
+                    previousArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M15 5L9 12L15 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'
+                    nextArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'>
       >
         <ng-template slot="installmentNumber" let-value="data">
           <span class="font-semibold">Cuota {{ value.number }}</span>
         </ng-template>
-        
+
         <ng-template slot="dueDate" let-value="data">
           <span>{{ value.dueDate | date:'dd/MM/yyyy' }}</span>
         </ng-template>
-        
+
         <ng-template slot="amount" let-value="data">
-          <span class="font-semibold">${{ value.amount | number }}</span>
+          <span class="font-semibold">S/. {{ value.amount | number }}</span>
         </ng-template>
-        
+
         <ng-template slot="status" let-value="data">
-          <span class="badge" 
-                [ngClass]="{'badge-outline-success rounded-full': value.status === 'PAID', 
+          <span class="badge"
+                [ngClass]="{'badge-outline-success rounded-full': value.status === 'PAID',
                            'badge-outline-warning rounded-full': value.status === 'PENDING',
                            'badge-outline-danger rounded-full': value.status === 'OVERDUE'}">
             {{ value.status | installmentStatus }}
           </span>
         </ng-template>
-        
+
         <ng-template slot="actions" let-value="data">
           <div *ngIf="value.status !== 'PAID'">
             <button class="btn btn-sm btn-primary" (click)="payInstallment(value)">
@@ -90,19 +90,24 @@
         [rows]="payments()"
         [columns]="paymentCols"
         [sortable]="true"
-        skin="whitespace-nowrap bh-table-hover"
+       noDataContent="No se encontraron resultados" paginationInfo="Mostrando {0} a {1} de {2} registros"
+                    skin="whitespace-nowrap bh-table-hover"
+                    firstArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M13 19L7 12L13 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path opacity="0.5" d="M16.9998 19L10.9998 12L16.9998 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'
+                    lastArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M11 19L17 12L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path opacity="0.5" d="M6.99976 19L12.9998 12L6.99976 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg> '
+                    previousArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M15 5L9 12L15 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'
+                    nextArrow='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 rtl:rotate-180"> <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>'>
       >
         <!-- Templates para las columnas de pagos -->
         <ng-template slot="paymentDate" let-value="data">
           <span>{{ value.paymentDate | date:'dd/MM/yyyy' }}</span>
         </ng-template>
         <ng-template slot="amount" let-value="data">
-          <span class="font-semibold">${{ value.amount | number }}</span>
+          <span class="font-semibold">S/. {{ value.amount | number }}</span>
         </ng-template>
         <ng-template slot="paymentMethod" let-value="data">
-          <span>{{ value.paymentMethod | paymentsMethod }}</span>    
+          <span>{{ value.paymentMethod | paymentsMethod }}</span>
         </ng-template>
- 
+
         <ng-template slot="installmentNumber" let-value="data">
           <span>Cuota {{ value.installment?.number }}</span>
         </ng-template>
@@ -116,7 +121,7 @@
     </ng-template>
     <ng-template #modalBody>
       <form [formGroup]="paymentForm" class="text-sm" (ngSubmit)="processPayment()" ngNativeValidate>
-        
+
         <!-- Información de la cuota -->
         <div class="mb-5 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <h4 class="font-semibold mb-2">Información de la Cuota</h4>
@@ -135,13 +140,13 @@
         <!-- Monto del pago -->
         <div class="mb-5">
           <label for="amount">Monto del Pago <span class="text-red-500">*</span></label>
-          <input 
-            id="amount" 
-            type="number" 
+          <input
+            id="amount"
+            type="number"
             step="0.01"
             min="0"
-            class="form-input" 
-            formControlName="amount" 
+            class="form-input"
+            formControlName="amount"
             placeholder="0.00"
             required />
           <small class="text-gray-500">Monto de la cuota: ${{ selectedInstallment?.amount | number }}</small>
@@ -164,22 +169,22 @@
         <!-- Fecha de pago -->
         <div class="mb-5">
           <label for="paymentDate">Fecha de Pago <span class="text-red-500">*</span></label>
-          <input 
-            id="paymentDate" 
-            type="date" 
-            class="form-input" 
-            formControlName="paymentDate" 
+          <input
+            id="paymentDate"
+            type="date"
+            class="form-input"
+            formControlName="paymentDate"
             required />
         </div>
 
         <!-- Número de referencia (opcional) -->
         <div class="mb-5">
           <label for="referenceNumber">Número de Referencia</label>
-          <input 
-            id="referenceNumber" 
-            type="text" 
-            class="form-input" 
-            formControlName="referenceNumber" 
+          <input
+            id="referenceNumber"
+            type="text"
+            class="form-input"
+            formControlName="referenceNumber"
             placeholder="Ej: Número de transacción, cheque, etc." />
           <small class="text-gray-500">Opcional: Para transferencias, cheques o pagos digitales</small>
         </div>
@@ -187,11 +192,11 @@
         <!-- Notas adicionales -->
         <div class="mb-5">
           <label for="notes">Notas Adicionales</label>
-          <textarea 
-            id="notes" 
-            rows="3" 
-            class="form-textarea" 
-            formControlName="notes" 
+          <textarea
+            id="notes"
+            rows="3"
+            class="form-textarea"
+            formControlName="notes"
             placeholder="Observaciones sobre el pago (opcional)"></textarea>
         </div>
 

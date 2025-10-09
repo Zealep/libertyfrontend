@@ -1,0 +1,260 @@
+<div class="flex flex-col gap-2.5 xl:flex-row">
+    <div class="panel flex-1 px-0 py-6 ltr:xl:mr-6 rtl:xl:ml-6">
+        <div class="flex items-center justify-between px-4 pb-6">
+            <h2 class="text-xl font-bold">
+                {{ isEditing ? 'Editar Transacción' : 'Nueva Transacción' }}
+            </h2>
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="cancel()">
+                <i class="fa fa-times mr-2"></i>
+                Cancelar
+            </button>
+        </div>
+
+        <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="px-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Tipo de Transacción -->
+                <div class="col-span-2">
+                    <label class="font-semibold text-gray-700">Tipo de Transacción *</label>
+                    <div class="flex gap-4 mt-2">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio"
+                                   formControlName="type"
+                                   value="INCOME"
+                                   class="form-radio text-success mr-2" />
+                            <span class="text-success font-semibold">
+                                <i class="fa fa-arrow-up mr-1"></i>
+                                Ingreso
+                            </span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio"
+                                   formControlName="type"
+                                   value="EXPENSE"
+                                   class="form-radio text-danger mr-2" />
+                            <span class="text-danger font-semibold">
+                                <i class="fa fa-arrow-down mr-1"></i>
+                                Gasto
+                            </span>
+                        </label>
+                    </div>
+                    <div class="text-danger text-sm mt-1"
+                         *ngIf="transactionForm.get('type')?.invalid && transactionForm.get('type')?.touched">
+                        El tipo de transacción es requerido
+                    </div>
+                </div>
+
+                <!-- Monto -->
+                <div>
+                    <label for="amount" class="font-semibold text-gray-700">Monto *</label>
+                    <input id="amount"
+                           type="number"
+                           step="0.01"
+                           min="0"
+                           class="form-input mt-1"
+                           formControlName="amount"
+                           placeholder="0.00" />
+                    <div class="text-danger text-sm mt-1"
+                         *ngIf="transactionForm.get('amount')?.invalid && transactionForm.get('amount')?.touched">
+                        El monto es requerido y debe ser mayor a 0
+                    </div>
+                </div>
+
+                <!-- Fecha -->
+                <div>
+                    <label for="transactionDate" class="font-semibold text-gray-700">Fecha *</label>
+                    <input id="transactionDate"
+                           type="date"
+                           class="form-input mt-1"
+                           formControlName="transactionDate" />
+                    <div class="text-danger text-sm mt-1"
+                         *ngIf="transactionForm.get('transactionDate')?.invalid && transactionForm.get('transactionDate')?.touched">
+                        La fecha es requerida
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="col-span-2">
+                    <label for="description" class="font-semibold text-gray-700">Descripción *</label>
+                    <input id="description"
+                           type="text"
+                           class="form-input mt-1"
+                           formControlName="description"
+                           placeholder="Ej: Pago de servicios, Venta de producto..." />
+                    <div class="text-danger text-sm mt-1"
+                         *ngIf="transactionForm.get('description')?.invalid && transactionForm.get('description')?.touched">
+                        La descripción es requerida
+                    </div>
+                </div>
+
+                <!-- Categoría -->
+                <div>
+                    <label for="category" class="font-semibold text-gray-700">Categoría *</label>
+                    <div class="flex gap-2 mt-1">
+                        <select id="category"
+                                class="form-select flex-1"
+                                formControlName="category">
+                            <option value="">Seleccionar categoría</option>
+                            <option *ngFor="let category of filteredCategories()"
+                                    [value]="category.id">
+                                {{ category.name }}
+                            </option>
+                        </select>
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                (click)="openCategoryModal()"
+                                [disabled]="!transactionForm.get('type')?.value">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="text-danger text-sm mt-1"
+                         *ngIf="transactionForm.get('category')?.invalid && transactionForm.get('category')?.touched">
+                        La categoría es requerida
+                    </div>
+                </div>
+
+                <!-- Método de Pago -->
+                <div>
+                    <label for="paymentMethod" class="font-semibold text-gray-700">Método de Pago *</label>
+                    <select id="paymentMethod"
+                            class="form-select mt-1"
+                            formControlName="paymentMethod">
+                        <option value="CASH">Efectivo</option>
+                        <option value="BANK_TRANSFER">Transferencia Bancaria</option>
+                        <option value="CREDIT_CARD">Tarjeta de Crédito</option>
+                        <option value="DEBIT_CARD">Tarjeta de Débito</option>
+                        <option value="CHECK">Cheque</option>
+                    </select>
+                </div>
+
+                <!-- Referencia -->
+                <div>
+                    <label for="reference" class="font-semibold text-gray-700">Referencia</label>
+                    <input id="reference"
+                           type="text"
+                           class="form-input mt-1"
+                           formControlName="reference"
+                           placeholder="Número de transacción, cheque, etc." />
+                </div>
+
+                <!-- Notas -->
+                <div class="col-span-2">
+                    <label for="notes" class="font-semibold text-gray-700">Notas</label>
+                    <textarea id="notes"
+                              rows="3"
+                              class="form-textarea mt-1"
+                              formControlName="notes"
+                              placeholder="Información adicional..."></textarea>
+                </div>
+
+                <!-- Transacción Recurrente -->
+                <div class="col-span-2">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox"
+                               formControlName="isRecurring"
+                               class="form-checkbox mr-2" />
+                        <span class="font-semibold text-gray-700">Transacción Recurrente</span>
+                    </label>
+                </div>
+
+                <!-- Frecuencia (si es recurrente) -->
+                <div *ngIf="transactionForm.get('isRecurring')?.value">
+                    <label for="recurringFrequency" class="font-semibold text-gray-700">Frecuencia</label>
+                    <select id="recurringFrequency"
+                            class="form-select mt-1"
+                            formControlName="recurringFrequency">
+                        <option value="">Seleccionar frecuencia</option>
+                        <option value="DAILY">Diario</option>
+                        <option value="WEEKLY">Semanal</option>
+                        <option value="MONTHLY">Mensual</option>
+                        <option value="YEARLY">Anual</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end gap-3 mt-8 pt-6 border-t">
+                <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="btn btn-primary"
+                        [disabled]="transactionForm.invalid">
+                    <i class="fa fa-save mr-2"></i>
+                    {{ isEditing ? 'Actualizar' : 'Guardar' }} Transacción
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para agregar categoría -->
+<ngx-custom-modal #categoryModal class="no-footer">
+    <ng-template #modalHeader>
+        <h4 class="font-semibold text-lg">Nueva Categoría</h4>
+    </ng-template>
+
+    <ng-template #modalBody>
+        <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+            <div class="space-y-4">
+                <!-- Nombre -->
+                <div>
+                    <label for="categoryName" class="font-semibold text-gray-700">Nombre *</label>
+                    <input id="categoryName"
+                           type="text"
+                           class="form-input mt-1"
+                           formControlName="name"
+                           placeholder="Ej: Alimentación, Servicios..." />
+                </div>
+
+                <!-- Tipo -->
+                <div>
+                    <label class="font-semibold text-gray-700">Tipo *</label>
+                    <div class="flex gap-4 mt-2">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio"
+                                   formControlName="type"
+                                   value="INCOME"
+                                   class="form-radio text-success mr-2" />
+                            <span class="text-success">Ingreso</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio"
+                                   formControlName="type"
+                                   value="EXPENSE"
+                                   class="form-radio text-danger mr-2" />
+                            <span class="text-danger">Gasto</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div>
+                    <label for="categoryDescription" class="font-semibold text-gray-700">Descripción</label>
+                    <textarea id="categoryDescription"
+                              rows="2"
+                              class="form-textarea mt-1"
+                              formControlName="description"
+                              placeholder="Descripción de la categoría..."></textarea>
+                </div>
+
+                <!-- Color -->
+                <div>
+                    <label for="categoryColor" class="font-semibold text-gray-700">Color</label>
+                    <input id="categoryColor"
+                           type="color"
+                           class="form-input mt-1 h-10"
+                           formControlName="color" />
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" class="btn btn-outline-secondary" (click)="categoryModal.close()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid">
+                    Crear Categoría
+                </button>
+            </div>
+        </form>
+    </ng-template>
+</ngx-custom-modal>

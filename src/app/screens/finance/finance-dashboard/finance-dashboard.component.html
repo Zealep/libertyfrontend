@@ -1,0 +1,355 @@
+<div>
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">Dashboard Financiero</h1>
+        <p class="text-gray-600">Resumen de {{ currentMonth }}/{{ currentYear }}</p>
+    </div>
+
+    <!-- Métricas principales -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <!-- Total Ingresos -->
+        <div class="panel">
+            <div class="flex items-center justify-between mb-4">
+                <h5 class="font-semibold text-lg">Ingresos</h5>
+                <div class="w-11 h-11 rounded-full bg-secondary/10 text-secondary flex items-center justify-center">
+                    <i class="fa fa-arrow-up"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold text-secondary">
+                {{ totalIncome() | currency:'S/. ':'symbol':'1.2-2' }}
+            </div>
+        </div>
+
+        <!-- Total Gastos -->
+        <div class="panel">
+            <div class="flex items-center justify-between mb-4">
+                <h5 class="font-semibold text-lg">Gastos</h5>
+                <div class="w-11 h-11 rounded-full bg-secondary/10 text-secondary flex items-center justify-center">
+                    <i class="fa fa-arrow-down"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold text-secondary">
+                {{ totalExpenses() | currency:'S/. ':'symbol':'1.2-2' }}
+            </div>
+        </div>
+
+        <!-- Balance -->
+        <div class="panel">
+            <div class="flex items-center justify-between mb-4">
+                <h5 class="font-semibold text-lg">Balance</h5>
+                <div class="w-11 h-11 rounded-full bg-secondary/10 text-secondary flex items-center justify-center">
+                    <i class="fa fa-balance-scale"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold text-secondary">
+                {{ balance() | currency:'S/. ':'symbol':'1.2-2' }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <button type="button" class="btn btn-primary btn-lg" (click)="addIncome()">
+            <i class="fa fa-plus mr-2"></i>
+            Agregar Ingreso
+        </button>
+
+        <button type="button" class="btn btn-primary btn-lg" (click)="addExpense()">
+            <i class="fa fa-minus mr-2"></i>
+            Agregar Gasto
+        </button>
+
+        <button type="button" class="btn btn-primary btn-lg" (click)="navigateToTransactions()">
+            <i class="fa fa-list mr-2"></i>
+            Ver Transacciones
+        </button>
+
+        <button type="button" class="btn btn-primary btn-lg" (click)="navigateToCategories()">
+            <i class="fa fa-tags mr-2"></i>
+            Gestionar Categorías
+        </button>
+    </div>
+
+    <!-- Transacciones recientes -->
+    <div class="panel">
+        <div class="flex items-center justify-between mb-4">
+            <h5 class="font-semibold text-lg">Transacciones Recientes</h5>
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="navigateToTransactions()">
+                Ver todas
+            </button>
+        </div>
+
+        <div *ngIf="loading" class="text-center py-4">
+            <i class="fa fa-spinner fa-spin text-2xl"></i>
+        </div>
+
+        <div *ngIf="!loading && transactions().length === 0" class="text-center py-8 text-gray-500">
+            No hay transacciones este mes
+        </div>
+
+        <div *ngIf="!loading && transactions().length > 0" class="space-y-2">
+            <div *ngFor="let transaction of transactions().slice(0, 5)"
+                 class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                        <i class="fa" [ngClass]="{
+                            'fa-arrow-up': transaction.type === 'INCOME',
+                            'fa-arrow-down': transaction.type === 'EXPENSE'
+                        }"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold">{{ transaction.description }}</div>
+                        <div class="text-sm text-gray-500">{{ transaction.category.name }}</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="font-semibold text-secondary">
+                        {{ transaction.type === 'EXPENSE' ? '-' : '+' }}{{ transaction.amount | currency:'S/. ':'symbol':'1.2-2' }}
+                    </div>
+                    <div class="text-sm text-gray-500">{{ transaction.transactionDate | date:'dd/MM/yyyy' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para transacciones -->
+<ngx-custom-modal #transactionModal class="no-footer" size="lg">
+    <ng-template #modalHeader>
+        <h4 class="font-semibold text-primary text-lg ml-5 my-2">
+            <span *ngIf="transactionForm.get('type')?.value === 'INCOME'" class="text-primary">
+                Registro de Ingreso
+            </span>
+            <span *ngIf="transactionForm.get('type')?.value === 'EXPENSE'" class="text-primary">
+                Registro de Gasto
+            </span>
+        </h4>
+    </ng-template>
+
+    <ng-template #modalBody>
+        <form [formGroup]="transactionForm" (ngSubmit)="guardarTransaccion()" class="space-y-4">
+            <!-- Tipo (readonly, ya viene definido) -->
+            <div class="text-center p-3 bg-primary/10 text-primary rounded-lg">
+                <span class="font-semibold text-lg">
+                    <i class="fa mr-2" [ngClass]="{
+                        'fa-arrow-up': transactionForm.get('type')?.value === 'INCOME',
+                        'fa-arrow-down': transactionForm.get('type')?.value === 'EXPENSE'
+                    }"></i>
+                    {{ transactionForm.get('type')?.value === 'INCOME' ? 'INGRESO' : 'GASTO' }}
+                </span>
+            </div>
+
+            <!-- Grid de campos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Monto -->
+                <div>
+                    <label for="amount" class="font-semibold text-gray-700">Monto *</label>
+                    <input id="amount"
+                           type="number"
+                           step="0.01"
+                           min="0"
+                           class="form-input mt-1"
+                           [class.border-danger]="transactionForm.get('amount')?.invalid && transactionForm.get('amount')?.touched"
+                           formControlName="amount"
+                           placeholder="0.00" />
+                    <div class="text-danger text-sm mt-1"
+                         *ngIf="transactionForm.get('amount')?.invalid && transactionForm.get('amount')?.touched">
+                        El monto es requerido
+                    </div>
+                </div>
+
+                <!-- Fecha -->
+                <div>
+                    <label for="transactionDate" class="font-semibold text-gray-700">Fecha *</label>
+                    <input id="transactionDate"
+                           type="date"
+                           class="form-input mt-1"
+                           [class.border-danger]="transactionForm.get('transactionDate')?.invalid && transactionForm.get('transactionDate')?.touched"
+                           formControlName="transactionDate" />
+                    <div class="text-danger text-sm mt-1"
+                         *ngIf="transactionForm.get('transactionDate')?.invalid && transactionForm.get('transactionDate')?.touched">
+                        La fecha es requerida
+                    </div>
+                </div>
+
+                <!-- Categoría -->
+                <div>
+                    <label for="category" class="font-semibold text-gray-700">Categoría *</label>
+                    <div class="flex gap-2 mt-1">
+                        <ng-select formControlName="category"
+                                   [items]="filteredCategories()"
+                                   bindLabel="name"
+
+                                   placeholder="Seleccionar categoría"
+                                   [clearable]="false"
+                                   class="flex-1"
+                                   [class.border-danger]="transactionForm.get('category')?.invalid && transactionForm.get('category')?.touched">
+                            <ng-template ng-label-tmp let-item="item">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full" [style.background-color]="item.color || '#3b82f6'"></div>
+                                    {{ item.name }}
+                                </div>
+                            </ng-template>
+                            <ng-template ng-option-tmp let-item="item">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full" [style.background-color]="item.color || '#3b82f6'"></div>
+                                    <div>
+                                        <div class="font-semibold">{{ item.name }}</div>
+                                        <div class="text-sm text-gray-500" *ngIf="item.description">{{ item.description }}</div>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </ng-select>
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                (click)="openCategoryModal()">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="text-danger text-sm mt-1"
+                         *ngIf="transactionForm.get('category')?.invalid && transactionForm.get('category')?.touched">
+                        La categoría es requerida
+                    </div>
+                </div>
+
+                <!-- Método de Pago -->
+                <div>
+                    <label for="paymentMethod" class="font-semibold text-gray-700">Método de Pago *</label>
+                    <ng-select formControlName="paymentMethod"
+                               [items]="paymentMethods"
+                               [clearable]="false"
+                               bindLabel="label"
+                               bindValue="value"
+
+                               class="mt-1">
+                        <ng-template ng-label-tmp let-item="item">
+                            <div class="flex items-center gap-2">
+                                <i class="fa" [ngClass]="item.icon"></i>
+                                {{ item.label }}
+                            </div>
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                            <div class="flex items-center gap-2">
+                                <i class="fa" [ngClass]="item.icon"></i>
+                                {{ item.label }}
+                            </div>
+                        </ng-template>
+                    </ng-select>
+                </div>
+            </div>
+
+            <!-- Descripción -->
+            <div>
+                <label for="description" class="font-semibold text-gray-700">Descripción *</label>
+                <input id="description"
+                       type="text"
+                       class="form-input mt-1"
+                       [class.border-danger]="transactionForm.get('description')?.invalid && transactionForm.get('description')?.touched"
+                       formControlName="description"
+                       placeholder="Ej: Pago de servicios, Venta de producto..." />
+                <div class="text-danger text-sm mt-1"
+                     *ngIf="transactionForm.get('description')?.invalid && transactionForm.get('description')?.touched">
+                    La descripción es requerida
+                </div>
+            </div>
+
+            <!-- Referencia -->
+            <div>
+                <label for="reference" class="font-semibold text-gray-700">Referencia</label>
+                <input id="reference"
+                       type="text"
+                       class="form-input mt-1"
+                       formControlName="reference"
+                       placeholder="Número de transacción, cheque, etc." />
+            </div>
+
+            <!-- Notas -->
+            <div>
+                <label for="notes" class="font-semibold text-gray-700">Notas</label>
+                <textarea id="notes"
+                          rows="2"
+                          class="form-textarea mt-1"
+                          formControlName="notes"
+                          placeholder="Información adicional..."></textarea>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end gap-3 pt-4 border-t">
+                <button type="button" class="btn btn-outline-primary" (click)="transactionModal.close()">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="btn btn-primary"
+                        [disabled]="transactionForm.invalid">
+                    <i class="fa fa-save mr-2"></i>
+                    Registrar {{ transactionForm.get('type')?.value === 'INCOME' ? 'Ingreso' : 'Gasto' }}
+                </button>
+            </div>
+        </form>
+    </ng-template>
+</ngx-custom-modal>
+
+<!-- Modal para categorías -->
+<ngx-custom-modal #categoryModal class="no-footer">
+    <ng-template #modalHeader>
+        <h4 class="font-semibold text-primary text-lg">Nueva Categoría</h4>
+    </ng-template>
+
+    <ng-template #modalBody>
+        <form [formGroup]="categoryForm" (ngSubmit)="guardarCategoria()">
+            <div class="space-y-4">
+                <!-- Nombre -->
+                <div>
+                    <label for="categoryName" class="font-semibold text-gray-700">Nombre *</label>
+                    <input id="categoryName"
+                           type="text"
+                           class="form-input mt-1"
+                           formControlName="name"
+                           placeholder="Ej: Alimentación, Servicios..." />
+                </div>
+
+                <!-- Tipo (readonly, ya viene del transactionForm) -->
+                <div>
+                    <label class="font-semibold text-gray-700">Tipo</label>
+                    <div class="mt-2 p-3 bg-primary/10 text-primary rounded-lg">
+                        <span class="font-semibold">
+                            <i class="fa mr-1" [ngClass]="{
+                                'fa-arrow-up': categoryForm.get('type')?.value === 'INCOME',
+                                'fa-arrow-down': categoryForm.get('type')?.value === 'EXPENSE'
+                            }"></i>
+                            {{ categoryForm.get('type')?.value === 'INCOME' ? 'Ingreso' : 'Gasto' }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div>
+                    <label for="categoryDescription" class="font-semibold text-gray-700">Descripción</label>
+                    <textarea id="categoryDescription"
+                              rows="2"
+                              class="form-textarea mt-1"
+                              formControlName="description"
+                              placeholder="Descripción de la categoría..."></textarea>
+                </div>
+
+                <!-- Color -->
+                <div>
+                    <label for="categoryColor" class="font-semibold text-gray-700">Color</label>
+                    <input id="categoryColor"
+                           type="color"
+                           class="form-input mt-1 h-10"
+                           formControlName="color" />
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" class="btn btn-outline-primary" (click)="categoryModal.close()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid">
+                    Crear Categoría
+                </button>
+            </div>
+        </form>
+    </ng-template>
+</ngx-custom-modal>

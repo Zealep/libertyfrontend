@@ -32,8 +32,8 @@
                     <a class="font-semibold text-primary underline hover:no-underline">#{{ value.id }}</a>
                 </ng-template>
                 <ng-template slot="firstName" let-value="data">
-                    <div class="font-semibold">{{ value.firstName }}</div>
-                </ng-template>
+    <div>{{ value.firstName }}</div>
+</ng-template>
                 <ng-template slot="lastName" let-value="data">
                     <div class="font-semibold">{{ value.lastName }}</div>
                 </ng-template>
@@ -47,7 +47,12 @@
                     <div>{{ value.phone }}</div>
                 </ng-template>
                 <ng-template slot="state" let-value="data">
-                    <div>{{ value.state }}</div>
+                    <span class="badge" [ngClass]="{
+                        'badge-outline-success': value.state === 'ACTIVE',
+                        'badge-outline-danger': value.state === 'INACTIVE'
+                        }">
+                        {{ value.state === 'ACTIVE' ? 'Activo' : 'Inactivo' }}
+                    </span>
                 </ng-template>
                 <ng-template slot="acciones" let-value="data">
                     <div>
@@ -89,10 +94,14 @@
                         <label for="phone">Teléfono</label>
                         <input id="phone" type="text" class="form-input" formControlName="phone" />
                     </div>
-                    <div class="mb-5">
-                        <label for="state">Estado</label>
-                        <input id="state" type="text" class="form-input" formControlName="state" />
-                    </div>
+                  <div class="mb-5">
+    <label for="state">Estado</label>
+    <select id="state" class="form-select" formControlName="state">
+        <option value="">Seleccionar estado</option>
+        <option value="ACTIVE">Activo</option>
+        <option value="INACTIVE">Inactivo</option>
+    </select>
+</div>
                     <div class="mt-8 flex items-center justify-end">
                         <button type="button" class="btn btn-outline-danger" (click)="addModal.close()">Cancelar</button>
                         <button type="submit" class="btn btn-primary ltr:ml-4 rtl:mr-4">{{ params.controls['id'].value ? 'Editar' : 'Agregar' }}</button>

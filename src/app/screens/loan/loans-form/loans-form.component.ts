@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DataTableModule } from '@bhplugin/ng-datatable';
 import { NgLabelTemplateDirective, NgOptionTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
 import { FlatpickrDirective } from 'angularx-flatpickr';
@@ -41,6 +42,7 @@ export class LoansFormComponent {
     private readonly installmentService = inject(InstallmentService);
     private readonly toastService = inject(ToastService);
     private readonly fb = inject(FormBuilder);
+    private readonly router = inject(Router);
 
     loanForm!: FormGroup;
     customerForm!: FormGroup;
@@ -352,5 +354,13 @@ export class LoansFormComponent {
 
         this.toastService.showMessage('PDF exportado correctamente', 'success');
     }
+    onCancel(): void {
+        this.loanForm.reset();
+        this.router.navigate(['/loans']);
+    }
+
+
+
+
 
 }

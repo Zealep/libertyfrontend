@@ -23,8 +23,24 @@ export const routes: Routes = [
                 loadComponent: () => import('./screens/loan/loans-form/loans-form.component').then((c) => c.LoansFormComponent),
             },
             {
+                path: 'finance',
+                loadComponent: () => import('./screens/finance/finance-dashboard/finance-dashboard.component').then((c) => c.FinanceDashboardComponent),
+            },
+            {
+                path: 'finance/transactions',
+                loadComponent: () => import('./screens/finance/transactions-list/transactions-list.component').then((c) => c.TransactionsListComponent),
+            },
+            {
+                path: 'finance/transactions/form',
+                loadComponent: () => import('./screens/finance/transactions-form/transactions-form.component').then((c) => c.TransactionsFormComponent),
+            },
+            {
                 path: 'customers',
                 loadComponent: () => import('./screens/customer/customers-list/customers-list.component').then((c) => c.CustomersListComponent),
+            },
+            {
+                path: 'categories',
+                loadComponent: () => import('./screens/category/categories-list/categories-list.component').then((c) => c.CategoriesListComponent),
             }
 
         ],

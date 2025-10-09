@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DataTableModule } from '@bhplugin/ng-datatable';
 import { NgxCustomModalComponent } from 'ngx-custom-modal';
 import { firstValueFrom } from 'rxjs';
@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
   imports: [DataTableModule, CommonModule, FormsModule, NgxCustomModalComponent, ReactiveFormsModule],
   templateUrl: './customers-list.component.html',
 })
-export class CustomersListComponent {
+export class CustomersListComponent implements OnInit {
   loading = false;
   private readonly customerService = inject(CustomerService);
   private readonly fb = inject(FormBuilder);
@@ -26,13 +26,13 @@ export class CustomersListComponent {
 
   cols = [
     { field: 'id', title: 'ID', isUnique: true },
-    { field: 'firstName', title: 'Nombre' },
-    { field: 'lastName', title: 'Apellido' },
-    { field: 'documentNumber', title: 'Documento' },
-    { field: 'email', title: 'Email' },
-    { field: 'phone', title: 'Teléfono' },
-    { field: 'state', title: 'Estado' },
-    { field: 'acciones', title: 'Acciones' },
+    { field: 'firstName', title: 'Nombre', slot: 'firstName' },
+    { field: 'lastName', title: 'Apellido', slot: 'lastName' },
+    { field: 'documentNumber', title: 'Documento', slot: 'documentNumber' },
+    { field: 'email', title: 'Email', slot: 'email' },
+    { field: 'phone', title: 'Teléfono', slot: 'phone' },
+    { field: 'state', title: 'Estado', slot: 'state' },
+    { field: 'acciones', title: 'Acciones', slot: 'acciones' },
   ];
 
   initForm() {
@@ -43,7 +43,7 @@ export class CustomersListComponent {
       documentNumber: [''],
       email: [''],
       phone: [''],
-      state: [''],
+      state: ['ACTIVE', Validators.required] // ← Valor por defecto 'ACTIVE'
     });
   }
 
