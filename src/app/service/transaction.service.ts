@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Transaction } from '../model/transaction';
 import { environment } from 'src/environments/environment';
@@ -15,8 +15,14 @@ export class TransactionService {
         return this.http.get<Transaction[]>(this.baseUrl);
     }
 
-    getByDateRange(startDate: string, endDate: string): Observable<Transaction[]> {
-        return this.http.get<Transaction[]>(`${this.baseUrl}/range?start=${startDate}&end=${endDate}`);
+   getByDateRange(startDate: string, endDate: string, type?: string): Observable<Transaction[]> {
+        let url = `${this.baseUrl}/range?start=${startDate}&end=${endDate}`;
+
+        if (type) {
+            url += `&type=${type}`;
+        }
+
+        return this.http.get<Transaction[]>(url);
     }
 
     getByType(type: 'INCOME' | 'EXPENSE'): Observable<Transaction[]> {
@@ -42,4 +48,5 @@ export class TransactionService {
     getYearlyReport(year: number): Observable<any> {
         return this.http.get(`${this.baseUrl}/report/yearly?year=${year}`);
     }
+
 }

@@ -35,6 +35,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./screens/finance/transactions-form/transactions-form.component').then((c) => c.TransactionsFormComponent),
             },
             {
+                path: 'finance/import',
+                loadComponent: () => import('./screens/finance/import-transactions/import-transactions.component').then((c) => c.ImportTransactionsComponent),
+            },
+            {
                 path: 'customers',
                 loadComponent: () => import('./screens/customer/customers-list/customers-list.component').then((c) => c.CustomersListComponent),
             },

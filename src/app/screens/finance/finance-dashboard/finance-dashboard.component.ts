@@ -250,4 +250,8 @@ export class FinanceDashboardComponent implements OnInit {
             control?.markAsTouched();
         });
     }
+
+      navigateToImport(): void {
+        this.router.navigate(['/finance/import']);
+    }
 }

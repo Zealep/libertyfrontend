@@ -32,10 +32,10 @@ export class CategoriesListComponent implements OnInit {
 
     cols = [
         { field: 'id', title: 'ID', slot: 'id' },
-        { field: 'name', title: 'Nombre', slot: 'nombre' },
-        { field: 'type', title: 'Tipo', slot: 'tipo' },
-        { field: 'description', title: 'Descripción', slot: 'descripcion' },
-        { field: 'active', title: 'Estado', slot: 'estado' },
+        { field: 'name', title: 'Nombre', slot: 'name' },
+        { field: 'type', title: 'Tipo', slot: 'type' },
+        { field: 'description', title: 'Descripción', slot: 'description' },
+        //{ field: 'active', title: 'Estado', slot: 'active' },
         { field: 'acciones', title: 'Acciones', slot: 'acciones', sort: false, filter: false }
     ];
 

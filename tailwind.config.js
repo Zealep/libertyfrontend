@@ -17,12 +17,12 @@ module.exports = {
         extend: {
             colors: {
                 primary: {
-                    DEFAULT: '#3a89c9 ',
+                    DEFAULT: '#0339A6 ',
                     light: '#eaf1ff',
                     'dark-light': 'rgba(67,97,238,.15)',
                 },
                 secondary: {
-                    DEFAULT: '#805dca',
+                    DEFAULT: '#F29544',
                     light: '#ebe4f7',
                     'dark-light': 'rgb(128 93 202 / 15%)',
                 },

@@ -1,0 +1,313 @@
+<div>
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold">Importar Transacciones</h1>
+                <p class="text-gray-600">Carga transacciones desde archivos CSV</p>
+            </div>
+            <button type="button" class="btn btn-outline-primary" (click)="cancel()">
+                <i class="fa fa-arrow-left mr-2"></i>
+                Volver
+            </button>
+        </div>
+    </div>
+
+    <!-- Área de carga -->
+    <div class="panel mb-6" *ngIf="!importResult()">
+        <div class="text-center py-12">
+            <div class="mb-4">
+                <i class="fa fa-file-csv text-6xl text-primary"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Selecciona un archivo CSV</h3>
+            <p class="text-gray-600 mb-6">
+                Formatos soportados: extractos bancarios, billeteras digitales, tarjetas de crédito
+            </p>
+
+            <div class="flex gap-4 justify-center">
+                <label class="btn btn-primary cursor-pointer">
+                    <i class="fa fa-upload mr-2"></i>
+                    Seleccionar Archivo
+                    <input type="file"
+                           accept=".csv"
+                           (change)="onFileSelected($event)"
+                           class="hidden" />
+                </label>
+
+                <button type="button"
+                        class="btn btn-outline-primary"
+                        (click)="downloadTemplate()">
+                    <i class="fa fa-download mr-2"></i>
+                    Descargar Plantilla
+                </button>
+            </div>
+
+            <!-- Instrucciones -->
+            <div class="mt-8 text-left max-w-2xl mx-auto">
+                <h4 class="font-semibold mb-3">📋 Formatos soportados:</h4>
+                <ul class="space-y-2 text-sm text-gray-600">
+                    <li>✅ <strong>Formato 1:</strong> Fecha, Monto, Descripción, Tipo</li>
+                    <li>✅ <strong>Formato 2:</strong> Fecha, Descripción, Monto</li>
+                    <li>✅ <strong>Formato 3:</strong> Monto, Fecha, Descripción</li>
+                    <li>✅ <strong>Fechas:</strong> DD/MM/YYYY, YYYY-MM-DD, DD-MM-YYYY</li>
+                    <li>✅ <strong>Montos:</strong> Con o sin símbolos (S/., $), decimales con . o ,</li>
+                    <li>✅ <strong>Tipos:</strong> Automático (positivo=ingreso, negativo=gasto)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Previsualización de transacciones -->
+    <div *ngIf="importResult() && !loading">
+        <!-- Resumen -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="panel bg-blue-50">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-blue-600">{{ importResult()?.totalRows }}</div>
+                    <div class="text-sm text-gray-600">Total de filas</div>
+                </div>
+            </div>
+            <div class="panel bg-green-50">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-green-600">{{ importResult()?.validRows }}</div>
+                    <div class="text-sm text-gray-600">Transacciones válidas</div>
+                </div>
+            </div>
+            <div class="panel bg-red-50">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-red-600">{{ importResult()?.invalidRows }}</div>
+                    <div class="text-sm text-gray-600">Con errores</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de transacciones -->
+        <div class="panel">
+            <div class="flex items-center justify-between mb-4">
+                <h5 class="font-semibold text-lg">Transacciones a importar</h5>
+                <div class="flex gap-2">
+                    <label class="btn btn-outline-primary btn-sm cursor-pointer">
+                        <i class="fa fa-file-csv mr-2"></i>
+                        Cargar otro archivo
+                        <input type="file"
+                               accept=".csv"
+                               (change)="onFileSelected($event)"
+                               class="hidden" />
+                    </label>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-hover">
+                    <thead>
+                        <tr>
+                            <th class="w-10">#</th>
+                            <th>Fecha</th>
+                            <th>Descripción</th>
+                            <th>Tipo</th>
+                            <th>Monto</th>
+                            <th>Categoría</th>
+                            <th>Estado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let transaction of importResult()?.transactions; let i = index"
+                            [class.bg-red-50]="!transaction.isValid"
+                            [class.bg-green-50]="transaction.isValid">
+                            <td>{{ i + 1 }}</td>
+                            <td>
+                                <span *ngIf="transaction.transactionDate">
+                                    {{ transaction.transactionDate | date:'dd/MM/yyyy' }}
+                                </span>
+                                <span *ngIf="!transaction.transactionDate" class="text-red-600">
+                                    Inválida
+                                </span>
+                            </td>
+                            <td>
+                                <div class="font-semibold">{{ transaction.description }}</div>
+                                <div class="text-sm text-gray-500" *ngIf="transaction.reference">
+                                    Ref: {{ transaction.reference }}
+                                </div>
+                                <div class="text-sm text-blue-600" *ngIf="transaction.suggestedCategory">
+                                    💡 Sugerencia: {{ transaction.suggestedCategory }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge"
+                                      [class.badge-outline-success]="transaction.type === 'INCOME'"
+                                      [class.badge-outline-danger]="transaction.type === 'EXPENSE'">
+                                    <i class="fa mr-1"
+                                       [class.fa-arrow-up]="transaction.type === 'INCOME'"
+                                       [class.fa-arrow-down]="transaction.type === 'EXPENSE'"></i>
+                                    {{ transaction.type === 'INCOME' ? 'Ingreso' : 'Gasto' }}
+                                </span>
+                            </td>
+                            <td class="font-semibold">
+                                {{ transaction.amount | currency:'S/. ':'symbol':'1.2-2' }}
+                            </td>
+                            <td>
+                                <span *ngIf="transaction.category" class="badge badge-outline-primary">
+                                    {{ transaction.category.name }}
+                                </span>
+                                <span *ngIf="!transaction.category" class="text-gray-400">
+                                    Sin asignar
+                                </span>
+                            </td>
+                            <td>
+                                <span *ngIf="transaction.isValid" class="text-green-600 font-semibold">
+                                    <i class="fa fa-check-circle mr-1"></i>
+                                    Válido
+                                </span>
+                                <div *ngIf="!transaction.isValid">
+                                    <span class="text-red-600 font-semibold">
+                                        <i class="fa fa-exclamation-circle mr-1"></i>
+                                        Con errores
+                                    </span>
+                                    <ul class="text-xs text-red-600 mt-1">
+                                        <li *ngFor="let error of transaction.validationErrors">• {{ error }}</li>
+                                    </ul>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="flex gap-2 justify-center">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary"
+                                            (click)="editTransaction(i)">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            (click)="removeTransaction(i)">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Acciones finales -->
+            <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                <button type="button"
+                        class="btn btn-outline-primary"
+                        (click)="cancel()">
+                    Cancelar
+                </button>
+                <button type="button"
+                        class="btn btn-primary"
+                        [disabled]="!importResult()?.validRows || loading"
+                        (click)="saveAllTransactions()">
+                    <i class="fa fa-save mr-2"></i>
+                    <span *ngIf="!loading">Guardar {{ importResult()?.validRows }} Transacciones</span>
+                    <span *ngIf="loading">
+                        <i class="fa fa-spinner fa-spin mr-2"></i>
+                        Guardando...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading && !importResult()" class="text-center py-12">
+        <i class="fa fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+        <p class="text-gray-600">Procesando archivo...</p>
+    </div>
+</div>
+
+<!-- Modal de edición -->
+<ngx-custom-modal #editModal class="no-footer" size="lg">
+    <ng-template #modalHeader>
+        <h4 class="font-semibold text-primary text-lg">Editar Transacción</h4>
+    </ng-template>
+
+    <ng-template #modalBody>
+        <form [formGroup]="editForm" (ngSubmit)="saveEdit()" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Fecha -->
+                <div>
+                    <label class="font-semibold text-gray-700">Fecha *</label>
+                    <input type="date"
+                           class="form-input mt-1"
+                           formControlName="transactionDate" />
+                </div>
+
+                <!-- Monto -->
+                <div>
+                    <label class="font-semibold text-gray-700">Monto *</label>
+                    <input type="number"
+                           step="0.01"
+                           class="form-input mt-1"
+                           formControlName="amount" />
+                </div>
+
+                <!-- Tipo -->
+                <div>
+                    <label class="font-semibold text-gray-700">Tipo *</label>
+                    <ng-select formControlName="type"
+                               [clearable]="false"
+                               [items]="[
+                                   {value: 'INCOME', label: 'Ingreso'},
+                                   {value: 'EXPENSE', label: 'Gasto'}
+                               ]"
+                               bindLabel="label"
+                               bindValue="value"
+                               class="mt-1">
+                    </ng-select>
+                </div>
+
+                <!-- Categoría -->
+                <div>
+                    <label class="font-semibold text-gray-700">Categoría *</label>
+                    <ng-select formControlName="category"
+                               [items]="getCategoriesByType(editForm.get('type')?.value)"
+                               bindLabel="name"
+                               placeholder="Seleccionar categoría"
+                               class="mt-1">
+                    </ng-select>
+                </div>
+            </div>
+
+            <!-- Descripción -->
+            <div>
+                <label class="font-semibold text-gray-700">Descripción *</label>
+                <input type="text"
+                       class="form-input mt-1"
+                       formControlName="description" />
+            </div>
+
+            <!-- Referencia -->
+            <div>
+                <label class="font-semibold text-gray-700">Referencia</label>
+                <input type="text"
+                       class="form-input mt-1"
+                       formControlName="reference" />
+            </div>
+
+            <!-- Notas -->
+            <div>
+                <label class="font-semibold text-gray-700">Notas</label>
+                <textarea rows="2"
+                          class="form-textarea mt-1"
+                          formControlName="notes"></textarea>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end gap-3 pt-4 border-t">
+                <button type="button"
+                        class="btn btn-outline-primary"
+                        (click)="editModal.close()">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="btn btn-primary"
+                        [disabled]="editForm.invalid">
+                    <i class="fa fa-save mr-2"></i>
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </ng-template>
+</ngx-custom-modal>

@@ -48,7 +48,7 @@
     </div>
 
     <!-- Acciones rápidas -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <button type="button" class="btn btn-primary btn-lg" (click)="addIncome()">
             <i class="fa fa-plus mr-2"></i>
             Agregar Ingreso
@@ -57,6 +57,11 @@
         <button type="button" class="btn btn-primary btn-lg" (click)="addExpense()">
             <i class="fa fa-minus mr-2"></i>
             Agregar Gasto
+        </button>
+
+        <button type="button" class="btn btn-warning btn-lg" (click)="navigateToImport()">
+            <i class="fa fa-file-import mr-2"></i>
+            Importar CSV
         </button>
 
         <button type="button" class="btn btn-primary btn-lg" (click)="navigateToTransactions()">
@@ -99,7 +104,7 @@
                     </div>
                     <div>
                         <div class="font-semibold">{{ transaction.description }}</div>
-                        <div class="text-sm text-gray-500">{{ transaction.category.name }}</div>
+                        <div class="text-sm text-gray-500">{{ transaction.category?.name }}</div>
                     </div>
                 </div>
                 <div class="text-right">
@@ -179,7 +184,6 @@
                         <ng-select formControlName="category"
                                    [items]="filteredCategories()"
                                    bindLabel="name"
-
                                    placeholder="Seleccionar categoría"
                                    [clearable]="false"
                                    class="flex-1"
@@ -220,7 +224,6 @@
                                [clearable]="false"
                                bindLabel="label"
                                bindValue="value"
-
                                class="mt-1">
                         <ng-template ng-label-tmp let-item="item">
                             <div class="flex items-center gap-2">

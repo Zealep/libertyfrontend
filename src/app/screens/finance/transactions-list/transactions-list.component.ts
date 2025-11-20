@@ -28,10 +28,13 @@ export class TransactionsListComponent implements OnInit {
     private readonly toastService = inject(ToastService);
     private readonly fb = inject(FormBuilder);
 
+
     loading = false;
     transactions = signal<Transaction[]>([]);
     categories = signal<Category[]>([]);
     filteredCategories = signal<Category[]>([]);
+    startDate = '';
+    endDate = '';
 
     @ViewChild('datatable') datatable: any;
     @ViewChild('transactionModal') transactionModal!: NgxCustomModalComponent;
@@ -42,6 +45,7 @@ export class TransactionsListComponent implements OnInit {
     search = '';
     typeFilter = '';
     isEditing = false;
+
 
     transactionTypeOptions = [
     { value: 'INCOME', label: 'Ingresos', icon: 'fa-arrow-up' },
@@ -58,18 +62,25 @@ paymentMethods = [
 
     cols = [
         { field: 'id', title: 'ID', slot: 'id' },
-        { field: 'transactionDate', title: 'Fecha', slot: 'fecha' },
-        { field: 'description', title: 'Descripción', slot: 'descripcion' },
-        { field: 'category.name', title: 'Categoría', slot: 'categoria' },
-        { field: 'type', title: 'Tipo', slot: 'tipo' },
-        { field: 'amount', title: 'Monto', slot: 'monto' },
-        { field: 'paymentMethod', title: 'Método', slot: 'metodo' },
+        { field: 'transactionDate', title: 'Fecha', slot: 'transactionDate' },
+        { field: 'description', title: 'Descripción', slot: 'description' },
+        { field: 'category.name', title: 'Categoría', slot: 'category.name' },
+        { field: 'type', title: 'Tipo', slot: 'type' },
+        { field: 'amount', title: 'Monto', slot: 'amount' },
+        { field: 'paymentMethod', title: 'Método', slot: 'paymentMethod' },
         { field: 'acciones', title: 'Acciones', slot: 'acciones', sort: false, filter: false }
     ];
 
     ngOnInit(): void {
         this.initForms();
         this.loadCategories();
+             // Establecer fechas por defecto (mes actual)
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        this.startDate = this.formatDate(firstDay);
+        this.endDate = this.formatDate(lastDay);
         this.getAll();
     }
 
@@ -127,15 +138,29 @@ paymentMethods = [
         }
     }
 
-    getAll(): void {
+   getAll(): void {
+        if (!this.startDate || !this.endDate) {
+            this.toastService.showMessage('Seleccione un rango de fechas', 'warning');
+            return;
+        }
+
+        if (this.startDate > this.endDate) {
+            this.toastService.showMessage('La fecha inicial debe ser menor a la fecha final', 'error');
+            return;
+        }
+
         this.loading = true;
-        this.transactionService.getAll().subscribe({
+        this.transactionService.getByDateRange(
+            this.startDate,
+            this.endDate,
+            this.typeFilter
+        ).subscribe({
             next: (res) => {
                 const mappedData = res.map(transaction => ({
                     ...transaction,
                     fecha: transaction.transactionDate,
                     descripcion: transaction.description,
-                    categoria: transaction.category.name,
+                    categoria: transaction.category?.name,
                     tipo: transaction.type,
                     monto: transaction.amount,
                     metodo: transaction.paymentMethod
@@ -149,6 +174,28 @@ paymentMethods = [
                 console.error('Error:', err);
             }
         });
+    }
+    applyDateFilter(): void {
+        this.getAll();
+    }
+       applyTypeFilter(): void {
+        this.getAll();
+    }
+
+
+    clearDateFilter(): void {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        this.startDate = this.formatDate(firstDay);
+        this.endDate = this.formatDate(lastDay);
+        this.typeFilter = '';
+        this.getAll();
+    }
+
+    private formatDate(date: Date): string {
+        return date.toISOString().split('T')[0];
     }
 
     // Métodos para abrir modales
@@ -316,13 +363,21 @@ paymentMethods = [
         this.toastService.showMessage('Funcionalidad en desarrollo', 'info');
     }
 
+    // Métodos de totales actualizados para usar signal
     getTotalBalance(): number {
         const transactions = this.transactions();
-        const income = transactions
+
+        // Filtrar por tipo si está seleccionado
+        let filtered = transactions;
+        if (this.typeFilter) {
+            filtered = transactions.filter(t => t.type === this.typeFilter);
+        }
+
+        const income = filtered
             .filter(t => t.type === 'INCOME')
             .reduce((sum, t) => sum + Number(t.amount), 0);
 
-        const expenses = transactions
+        const expenses = filtered
             .filter(t => t.type === 'EXPENSE')
             .reduce((sum, t) => sum + Number(t.amount), 0);
 
@@ -330,13 +385,29 @@ paymentMethods = [
     }
 
     getTotalIncome(): number {
-        return this.transactions()
+        let transactions = this.transactions();
+
+        if (this.typeFilter === 'INCOME') {
+            return transactions
+                .filter(t => t.type === 'INCOME')
+                .reduce((sum, t) => sum + Number(t.amount), 0);
+        }
+
+        return transactions
             .filter(t => t.type === 'INCOME')
             .reduce((sum, t) => sum + Number(t.amount), 0);
     }
 
     getTotalExpenses(): number {
-        return this.transactions()
+        let transactions = this.transactions();
+
+        if (this.typeFilter === 'EXPENSE') {
+            return transactions
+                .filter(t => t.type === 'EXPENSE')
+                .reduce((sum, t) => sum + Number(t.amount), 0);
+        }
+
+        return transactions
             .filter(t => t.type === 'EXPENSE')
             .reduce((sum, t) => sum + Number(t.amount), 0);
     }

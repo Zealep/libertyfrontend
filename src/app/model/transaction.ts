@@ -5,9 +5,9 @@ export interface Transaction {
     amount: number;
     description: string;
     type: 'INCOME' | 'EXPENSE';
-    category: Category;
+    category?: Category;
     transactionDate: string;
-    paymentMethod: 'CASH' | 'BANK_TRANSFER' | 'CREDIT_CARD' | 'DEBIT_CARD' | 'CHECK';
+    paymentMethod?: string;
     reference?: string;
     notes?: string;
     isRecurring?: boolean;

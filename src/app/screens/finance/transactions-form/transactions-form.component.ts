@@ -123,7 +123,7 @@ export class TransactionsFormComponent implements OnInit {
                     amount: transaction.amount,
                     description: transaction.description,
                     type: transaction.type,
-                    category: transaction.category.id,
+                    category: transaction.category?.id,
                     transactionDate: transaction.transactionDate,
                     paymentMethod: transaction.paymentMethod,
                     reference: transaction.reference,

@@ -76,7 +76,7 @@
                     <span class="font-semibold text-primary">#{{ value.id }}</span>
                 </ng-template>
 
-                <ng-template slot="nombre" let-value="data">
+                <ng-template slot="name" let-value="data">
                     <div class="flex items-center gap-3">
                         <!-- Color indicator -->
                         <div class="w-4 h-4 rounded-full border-2 border-gray-300"
@@ -90,7 +90,7 @@
                     </div>
                 </ng-template>
 
-                <ng-template slot="tipo" let-value="data">
+                <ng-template slot="type" let-value="data">
                     <span class="badge badge-outline-primary">
                         <i class="fa mr-1" [ngClass]="{
                             'fa-arrow-up': value.type === 'INCOME',
@@ -100,13 +100,13 @@
                     </span>
                 </ng-template>
 
-                <ng-template slot="descripcion" let-value="data">
+                <ng-template slot="description" let-value="data">
                     <div class="text-sm text-gray-600">
                         {{ value.description || 'Sin descripción' }}
                     </div>
                 </ng-template>
-
-                <ng-template slot="estado" let-value="data">
+                <!--
+                <ng-template slot="active" let-value="data">
                     <label class="w-12 h-6 relative">
                         <input type="checkbox"
                                class="custom_switch absolute w-full h-full opacity-0 z-10 cursor-pointer peer"
@@ -115,6 +115,7 @@
                         <span class="bg-[#ebedf2] dark:bg-dark block h-full rounded-full before:absolute before:left-1 before:bg-white dark:before:bg-white-dark dark:peer-checked:before:bg-white before:bottom-1 before:w-4 before:h-4 before:rounded-full peer-checked:before:left-7 peer-checked:bg-primary before:transition-all before:duration-300"></span>
                     </label>
                 </ng-template>
+                -->
 
                 <ng-template slot="acciones" let-value="data">
                     <div class="flex items-center gap-2">

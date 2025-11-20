@@ -54,66 +54,96 @@
 
                 <!-- Búsqueda -->
                 <div class="flex-1">
-                    <input [(ngModel)]="search"
-                           type="text"
-                           class="form-input"
-                           placeholder="Buscar por descripción, categoría..." />
+                    <input [(ngModel)]="search" type="text" class="form-input"
+                        placeholder="Buscar por descripción, categoría..." />
                 </div>
 
-                <!-- Filtros -->
-                <div class="flex gap-2">
-                    <select [(ngModel)]="typeFilter" class="form-select">
-                        <option value="">Todos los tipos</option>
-                        <option value="INCOME">Ingresos</option>
-                        <option value="EXPENSE">Gastos</option>
-                    </select>
-                </div>
+                   <!-- Filtros -->
+    <div class="flex gap-2 flex-wrap">
+        <!-- Filtro por Tipo -->
+        <select [(ngModel)]="typeFilter"
+        (ngModelChange)="applyTypeFilter()"
+                class="form-select w-40">
+            <option value="">Todos los tipos</option>
+            <option value="INCOME">Ingresos</option>
+            <option value="EXPENSE">Gastos</option>
+        </select>
+
+        <!-- Filtro por Fecha Desde -->
+        <div class="flex items-center gap-2">
+            <label class="font-semibold text-gray-700 whitespace-nowrap">Desde:</label>
+            <input type="date"
+                   [(ngModel)]="startDate"
+                   class="form-input w-40" />
+        </div>
+
+        <!-- Filtro por Fecha Hasta -->
+        <div class="flex items-center gap-2">
+            <label class="font-semibold text-gray-700 whitespace-nowrap">Hasta:</label>
+            <input type="date"
+                   [(ngModel)]="endDate"
+                   class="form-input w-40" />
+        </div>
+
+        <!-- Botones de filtro -->
+        <button type="button"
+                class="btn btn-primary"
+                (click)="applyDateFilter()">
+            <i class="fa fa-search mr-2"></i>
+            Buscar
+        </button>
+
+        <button type="button"
+                class="btn btn-outline-secondary"
+                (click)="clearDateFilter()">
+            <i class="fa fa-times mr-2"></i>
+            Limpiar
+        </button>
+    </div>
             </div>
 
             <!-- DataTable -->
-            <ng-datatable #datatable
-                [rows]="transactions()"
-                [columns]="cols"
-                [sortable]="true"
-                [search]="search"
-                noDataContent="No se encontraron transacciones"
-                paginationInfo="Mostrando {0} a {1} de {2} registros"
+            <ng-datatable #datatable [rows]="transactions()" [columns]="cols" [sortable]="true" [search]="search"
+                noDataContent="No se encontraron transacciones" paginationInfo="Mostrando {0} a {1} de {2} registros"
                 skin="whitespace-nowrap bh-table-hover">
 
                 <ng-template slot="id" let-value="data">
                     <span class="font-semibold text-primary">#{{ value.id }}</span>
                 </ng-template>
 
-                <ng-template slot="fecha" let-value="data">
-                    <div class="font-semibold">{{ value.transactionDate | date:'dd/MM/yyyy' }}</div>
+                <ng-template slot="transactionDate" let-value="data">
+                    <div class="font-semibold">{{ value.transactionDate | date:'mediumDate' }}</div>
                 </ng-template>
 
-                <ng-template slot="descripcion" let-value="data">
+                <ng-template slot="description" let-value="data">
                     <div class="font-semibold">{{ value.description }}</div>
                     <div class="text-sm text-gray-500" *ngIf="value.notes">{{ value.notes }}</div>
                 </ng-template>
 
-                <ng-template slot="categoria" let-value="data">
-                    <span class="badge badge-outline-info">{{ value.category.name }}</span>
+                <ng-template slot="category.name" let-value="data">
+                    <span class="badge badge-outline-info">{{ value.category?.name ?? 'Otros' }}</span>
                 </ng-template>
 
-                <ng-template slot="tipo" let-value="data">
-                    <span class="badge badge-outline-primary">
+                <ng-template slot="type" let-value="data">
+                    <span class="badge" [ngClass]="{
+              'badge-outline-success': value.type === 'INCOME',
+              'badge-outline-danger': value.type === 'EXPENSE'
+          }">
                         <i class="fa mr-1" [ngClass]="{
-                            'fa-arrow-up': value.type === 'INCOME',
-                            'fa-arrow-down': value.type === 'EXPENSE'
-                        }"></i>
-                        {{ value.type | transactionType }}
+            'fa-arrow-up': value.type === 'INCOME',
+            'fa-arrow-down': value.type === 'EXPENSE'
+        }"></i>
+                        {{ value.type === 'INCOME' ? 'Ingreso' : 'Gasto' }}
                     </span>
                 </ng-template>
 
-                <ng-template slot="monto" let-value="data">
+                <ng-template slot="amount" let-value="data">
                     <div class="font-semibold text-right text-secondary">
                         {{ value.type === 'EXPENSE' ? '-' : '+' }}{{ value.amount | currency:'S/. ':'symbol':'1.2-2' }}
                     </div>
                 </ng-template>
 
-                <ng-template slot="metodo" let-value="data">
+                <ng-template slot="paymentMethod" let-value="data">
                     <span class="text-sm">{{ value.paymentMethod | paymentsMethod }}</span>
                 </ng-template>
 
@@ -148,20 +178,16 @@
                 <label class="font-semibold text-gray-700">Tipo de Transacción *</label>
                 <div class="flex gap-6 mt-2">
                     <label class="flex items-center cursor-pointer">
-                        <input type="radio"
-                               formControlName="type"
-                               value="INCOME"
-                               class="form-radio text-primary mr-2" />
+                        <input type="radio" formControlName="type" value="INCOME"
+                            class="form-radio text-primary mr-2" />
                         <span class="text-primary font-semibold">
                             <i class="fa fa-arrow-up mr-1"></i>
                             Ingreso
                         </span>
                     </label>
                     <label class="flex items-center cursor-pointer">
-                        <input type="radio"
-                               formControlName="type"
-                               value="EXPENSE"
-                               class="form-radio text-primary mr-2" />
+                        <input type="radio" formControlName="type" value="EXPENSE"
+                            class="form-radio text-primary mr-2" />
                         <span class="text-primary font-semibold">
                             <i class="fa fa-arrow-down mr-1"></i>
                             Gasto
@@ -175,65 +201,54 @@
                 <!-- Monto -->
                 <div>
                     <label for="amount" class="font-semibold text-gray-700">Monto *</label>
-                    <input id="amount"
-                           type="number"
-                           step="0.01"
-                           min="0"
-                           class="form-input mt-1"
-                           formControlName="amount"
-                           placeholder="0.00" />
+                    <input id="amount" type="number" step="0.01" min="0" class="form-input mt-1"
+                        formControlName="amount" placeholder="0.00" />
                 </div>
 
                 <!-- Fecha -->
                 <div>
                     <label for="transactionDate" class="font-semibold text-gray-700">Fecha *</label>
-                    <input id="transactionDate"
-                           type="date"
-                           class="form-input mt-1"
-                           formControlName="transactionDate" />
+                    <input id="transactionDate" type="date" class="form-input mt-1" formControlName="transactionDate" />
                 </div>
 
-                 <!-- Categoría -->
+                <!-- Categoría -->
                 <div>
                     <label for="category" class="font-semibold text-gray-700">Categoría *</label>
                     <div class="flex gap-2 mt-1">
-                        <ng-select formControlName="category"
-                                   [items]="filteredCategories()"
-                                   bindLabel="name"
-
-                                   placeholder="Seleccionar categoría"
-                                   [clearable]="false"
-                                   class="flex-1"
-                                   [class.border-danger]="transactionForm.get('category')?.invalid && transactionForm.get('category')?.touched">
+                        <ng-select formControlName="category" [items]="filteredCategories()" bindLabel="name"
+                            placeholder="Seleccionar categoría" [clearable]="false" class="flex-1"
+                            [class.border-danger]="transactionForm.get('category')?.invalid && transactionForm.get('category')?.touched">
                             <ng-template ng-label-tmp let-item="item">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-3 h-3 rounded-full" [style.background-color]="item.color || '#3b82f6'"></div>
+                                    <div class="w-3 h-3 rounded-full"
+                                        [style.background-color]="item.color || '#3b82f6'"></div>
                                     {{ item.name }}
                                 </div>
                             </ng-template>
                             <ng-template ng-option-tmp let-item="item">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-3 h-3 rounded-full" [style.background-color]="item.color || '#3b82f6'"></div>
+                                    <div class="w-3 h-3 rounded-full"
+                                        [style.background-color]="item.color || '#3b82f6'"></div>
                                     <div>
                                         <div class="font-semibold">{{ item.name }}</div>
-                                        <div class="text-sm text-gray-500" *ngIf="item.description">{{ item.description }}</div>
+                                        <div class="text-sm text-gray-500" *ngIf="item.description">{{ item.description
+                                            }}</div>
                                     </div>
                                 </div>
                             </ng-template>
                         </ng-select>
-                        <button type="button"
-                                class="btn btn-outline-primary btn-sm"
-                                (click)="openCategoryModal()">
+                        <button type="button" class="btn btn-outline-primary btn-sm" (click)="openCategoryModal()">
                             <i class="fa fa-plus"></i>
                         </button>
                     </div>
                     <div class="text-danger text-sm mt-1"
-                         *ngIf="transactionForm.get('category')?.invalid && transactionForm.get('category')?.touched">
+                        *ngIf="transactionForm.get('category')?.invalid && transactionForm.get('category')?.touched">
                         La categoría es requerida
                     </div>
                 </div>
 
                 <!-- Método de Pago -->
+                <!--
                 <div>
                     <label for="paymentMethod" class="font-semibold text-gray-700">Método de Pago *</label>
                     <select id="paymentMethod"
@@ -246,36 +261,28 @@
                         <option value="CHECK">Cheque</option>
                     </select>
                 </div>
+                -->
             </div>
 
             <!-- Descripción -->
             <div>
                 <label for="description" class="font-semibold text-gray-700">Descripción *</label>
-                <input id="description"
-                       type="text"
-                       class="form-input mt-1"
-                       formControlName="description"
-                       placeholder="Ej: Pago de servicios, Venta de producto..." />
+                <input id="description" type="text" class="form-input mt-1" formControlName="description"
+                    placeholder="Ej: Pago de servicios, Venta de producto..." />
             </div>
 
             <!-- Referencia -->
             <div>
                 <label for="reference" class="font-semibold text-gray-700">Referencia</label>
-                <input id="reference"
-                       type="text"
-                       class="form-input mt-1"
-                       formControlName="reference"
-                       placeholder="Número de transacción, cheque, etc." />
+                <input id="reference" type="text" class="form-input mt-1" formControlName="reference"
+                    placeholder="Número de transacción, cheque, etc." />
             </div>
 
             <!-- Notas -->
             <div>
                 <label for="notes" class="font-semibold text-gray-700">Notas</label>
-                <textarea id="notes"
-                          rows="2"
-                          class="form-textarea mt-1"
-                          formControlName="notes"
-                          placeholder="Información adicional..."></textarea>
+                <textarea id="notes" rows="2" class="form-textarea mt-1" formControlName="notes"
+                    placeholder="Información adicional..."></textarea>
             </div>
 
             <!-- Botones -->
@@ -283,9 +290,7 @@
                 <button type="button" class="btn btn-outline-primary" (click)="transactionModal.close()">
                     Cancelar
                 </button>
-                <button type="submit"
-                        class="btn btn-primary"
-                        [disabled]="transactionForm.invalid">
+                <button type="submit" class="btn btn-primary" [disabled]="transactionForm.invalid">
                     <i class="fa fa-save mr-2"></i>
                     {{ isEditing ? 'Actualizar' : 'Guardar' }}
                 </button>
@@ -306,53 +311,39 @@
                 <!-- Nombre -->
                 <div>
                     <label for="categoryName" class="font-semibold text-gray-700">Nombre *</label>
-                    <input id="categoryName"
-                           type="text"
-                           class="form-input mt-1"
-                           formControlName="name"
-                           placeholder="Ej: Alimentación, Servicios..." />
+                    <input id="categoryName" type="text" class="form-input mt-1" formControlName="name"
+                        placeholder="Ej: Alimentación, Servicios..." />
                 </div>
 
-              <div class="flex gap-2">
-    <ng-select [(ngModel)]="typeFilter"
-               [items]="transactionTypeOptions"
-               bindLabel="label"
-               bindValue="value"
-               placeholder="Todos los tipos"
-               [clearable]="true"
-               class="w-48">
-        <ng-template ng-label-tmp let-item="item">
-            <div class="flex items-center gap-2">
-                <i class="fa" [ngClass]="item.icon"></i>
-                {{ item.label }}
-            </div>
-        </ng-template>
-        <ng-template ng-option-tmp let-item="item">
-            <div class="flex items-center gap-2">
-                <i class="fa" [ngClass]="item.icon"></i>
-                {{ item.label }}
-            </div>
-        </ng-template>
-    </ng-select>
-</div>
+                <div class="flex gap-2">
+                    <ng-select [(ngModel)]="typeFilter" [items]="transactionTypeOptions" bindLabel="label"
+                        bindValue="value" placeholder="Todos los tipos" [clearable]="true" class="w-48">
+                        <ng-template ng-label-tmp let-item="item">
+                            <div class="flex items-center gap-2">
+                                <i class="fa" [ngClass]="item.icon"></i>
+                                {{ item.label }}
+                            </div>
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                            <div class="flex items-center gap-2">
+                                <i class="fa" [ngClass]="item.icon"></i>
+                                {{ item.label }}
+                            </div>
+                        </ng-template>
+                    </ng-select>
+                </div>
 
                 <!-- Descripción -->
                 <div>
                     <label for="categoryDescription" class="font-semibold text-gray-700">Descripción</label>
-                    <textarea id="categoryDescription"
-                              rows="2"
-                              class="form-textarea mt-1"
-                              formControlName="description"
-                              placeholder="Descripción de la categoría..."></textarea>
+                    <textarea id="categoryDescription" rows="2" class="form-textarea mt-1" formControlName="description"
+                        placeholder="Descripción de la categoría..."></textarea>
                 </div>
 
                 <!-- Color -->
                 <div>
                     <label for="categoryColor" class="font-semibold text-gray-700">Color</label>
-                    <input id="categoryColor"
-                           type="color"
-                           class="form-input mt-1 h-10"
-                           formControlName="color" />
+                    <input id="categoryColor" type="color" class="form-input mt-1 h-10" formControlName="color" />
                 </div>
             </div>
 
