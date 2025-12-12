@@ -3,7 +3,8 @@ import { BrowserModule, Title } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpBackend, HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpBackend, HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { JwtInterceptor } from './service/jwt.interceptor.service';
 import { RouterModule } from '@angular/router';
 
 //Routes
@@ -57,7 +58,14 @@ import { ThemeCustomizerComponent } from './layouts/theme-customizer';
         SharedModule.forRoot(),
     ],
     declarations: [AppComponent, HeaderComponent, FooterComponent, SidebarComponent, ThemeCustomizerComponent, IndexComponent, AppLayout, AuthLayout],
-    providers: [Title],
+    providers: [
+        Title,
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: JwtInterceptor,
+            multi: true
+        }
+    ],
     bootstrap: [AppComponent],
 })
 export class AppModule {}

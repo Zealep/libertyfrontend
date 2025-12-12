@@ -5,5 +5,6 @@
 export const environment = {
     production: false,
     url_api: 'http://localhost:8080/api',
+    url: 'http://localhost:8080',
     rol_default: 1,
 };

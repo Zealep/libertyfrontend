@@ -139,4 +139,9 @@ export class HeaderComponent {
         }
         window.location.reload();
     }
+
+    logout(){
+    localStorage.clear();
+    this.router.navigate(['/auth/signin']);
+    }
 }
