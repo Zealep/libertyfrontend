@@ -142,6 +142,6 @@ export class HeaderComponent {
 
     logout(){
     localStorage.clear();
-    this.router.navigate(['/auth/signin']);
+    this.router.navigate(['/login/signin']);
     }
 }

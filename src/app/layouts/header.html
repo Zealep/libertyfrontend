@@ -16,6 +16,7 @@
                 <icon-menu class="h-5 w-5" />
             </a>
         </div>
+        <!--
         <div class="hidden ltr:mr-2 rtl:ml-2 sm:block">
             <ul class="flex items-center space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
                 <li>
@@ -44,6 +45,7 @@
                 </li>
             </ul>
         </div>
+-->
         <div
             class="flex items-center space-x-1.5 ltr:ml-auto rtl:mr-auto rtl:space-x-reverse dark:text-[#d0d2d6] sm:flex-1 ltr:sm:ml-0 sm:rtl:mr-0 lg:space-x-2"
         >
@@ -57,7 +59,7 @@
                         <input
                             type="text"
                             class="peer form-input bg-gray-100 placeholder:tracking-widest ltr:pl-9 ltr:pr-9 rtl:pl-9 rtl:pr-9 sm:bg-transparent ltr:sm:pr-4 rtl:sm:pl-4"
-                            placeholder="Search..."
+                            placeholder="Buscar..."
                         />
                         <button type="button" class="absolute inset-0 h-9 w-9 appearance-none peer-focus:text-primary ltr:right-auto rtl:left-auto">
                             <icon-search class="mx-auto" />
@@ -106,7 +108,7 @@
                     <icon-laptop />
                 </a>
             </div>
-
+            <!--
             <div class="dropdown shrink-0">
                 <div hlMenu>
                     <button
@@ -262,6 +264,8 @@
                 </div>
             </div>
 
+            -->
+
             <div class="dropdown shrink-0">
                 <div hlMenu class="!block">
                     <button type="button" hlMenuButton class="group relative block">
@@ -279,10 +283,10 @@
                                 </div>
                                 <div class="truncate ltr:pl-4 rtl:pr-4">
                                     <h4 class="text-base">
-                                        John Doe<span class="rounded bg-success-light px-1 text-xs text-success ltr:ml-2 rtl:ml-2">Pro</span>
+                                        ZEALEP<span class="rounded bg-success-light px-1 text-xs text-success ltr:ml-2 rtl:ml-2">SAC</span>
                                     </h4>
                                     <a class="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white" href="javascript:;">
-                                        {{"johndoe@gmail.com"}}
+                                        {{"cristhianpelaez13@gmail.com"}}
                                     </a>
                                 </div>
                             </div>
@@ -302,7 +306,7 @@
                             </a>
                         </li>
                         <li>
-                            <a routerLink="/auth/boxed-lockscreen" *hlMenuItem="let menuItem" class="dark:hover:text-white">
+                            <a routerLink="/login/boxed-lockscreen" *hlMenuItem="let menuItem" class="dark:hover:text-white">
                                 <icon-lock-dots class="h-4.5 w-4.5 shrink-0 ltr:mr-2 rtl:ml-2" />
 
                                 Lock Screen
@@ -312,7 +316,7 @@
                             <a (click)="logout()" *hlMenuItem="let menuItem" class="!py-3 text-danger">
                                 <icon-logout class="h-4.5 w-4.5 shrink-0 rotate-90 ltr:mr-2 rtl:ml-2" />
 
-                                Sign Out
+                                Salir
                             </a>
                         </li>
                     </ul>
@@ -742,10 +746,10 @@
                         class="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark"
                     >
                         <li>
-                            <a routerLink="/auth/cover-login" target="_blank" routerLinkActive="active">{{ 'login_cover' | translate }}</a>
+                            <a routerLink="/login/cover-login" target="_blank" routerLinkActive="active">{{ 'login_cover' | translate }}</a>
                         </li>
                         <li>
-                            <a routerLink="/auth/boxed-signin" target="_blank" routerLinkActive="active">{{ 'login_boxed' | translate }}</a>
+                            <a routerLink="/login/boxed-signin" target="_blank" routerLinkActive="active">{{ 'login_boxed' | translate }}</a>
                         </li>
                     </ul>
                 </li>
@@ -760,10 +764,10 @@
                         class="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark"
                     >
                         <li>
-                            <a routerLink="/auth/cover-register" target="_blank" routerLinkActive="active">{{ 'register_cover' | translate }}</a>
+                            <a routerLink="/login/cover-register" target="_blank" routerLinkActive="active">{{ 'register_cover' | translate }}</a>
                         </li>
                         <li>
-                            <a routerLink="/auth/boxed-signup" target="_blank" routerLinkActive="active">{{ 'register_boxed' | translate }}</a>
+                            <a routerLink="/login/boxed-signup" target="_blank" routerLinkActive="active">{{ 'register_boxed' | translate }}</a>
                         </li>
                     </ul>
                 </li>
@@ -778,10 +782,10 @@
                         class="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark"
                     >
                         <li>
-                            <a routerLink="/auth/cover-password-reset" target="_blank" routerLinkActive="active">{{ 'recover_id_cover' | translate }}</a>
+                            <a routerLink="/login/cover-password-reset" target="_blank" routerLinkActive="active">{{ 'recover_id_cover' | translate }}</a>
                         </li>
                         <li>
-                            <a routerLink="/auth/boxed-password-reset" target="_blank" routerLinkActive="active">{{ 'recover_id_boxed' | translate }}</a>
+                            <a routerLink="/login/boxed-password-reset" target="_blank" routerLinkActive="active">{{ 'recover_id_boxed' | translate }}</a>
                         </li>
                     </ul>
                 </li>
@@ -796,10 +800,10 @@
                         class="absolute top-0 z-[10] hidden min-w-[180px] rounded bg-white p-0 py-2 text-dark shadow ltr:left-[95%] rtl:right-[95%] dark:bg-[#1b2e4b] dark:text-white-dark"
                     >
                         <li>
-                            <a routerLink="/auth/cover-lockscreen" target="_blank" routerLinkActive="active">{{ 'unlock_cover' | translate }}</a>
+                            <a routerLink="/login/cover-lockscreen" target="_blank" routerLinkActive="active">{{ 'unlock_cover' | translate }}</a>
                         </li>
                         <li>
-                            <a routerLink="/auth/boxed-lockscreen" target="_blank" routerLinkActive="active">{{ 'unlock_boxed' | translate }}</a>
+                            <a routerLink="/login/boxed-lockscreen" target="_blank" routerLinkActive="active">{{ 'unlock_boxed' | translate }}</a>
                         </li>
                     </ul>
                 </li>

@@ -9,10 +9,10 @@ export class JwtInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = this.authService.getToken();
-    const apiUrl = this.authService['apiUrl'] || '';
+    const apiUrl = this.authService['url'] || '';
 
     // Solo agregar el token si la petición es al apiUrl y el token existe
-    if (token && req.url.startsWith(apiUrl)) {
+    if (token && !req.url.startsWith(apiUrl + "/auth")) {
       const cloned = req.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`

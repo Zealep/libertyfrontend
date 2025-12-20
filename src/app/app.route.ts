@@ -14,13 +14,13 @@ export const routes: Routes = [
     // Ruta raíz - redirige al login
     {
         path: '',
-        redirectTo: 'auth/signin',
+        redirectTo: 'login/signin',
         pathMatch: 'full'
     },
 
     // Rutas de autenticación (sin layout de la app)
     {
-        path: 'auth',
+        path: 'login',
         component: BoxedSigninComponent,
         children: [
             {
@@ -98,6 +98,6 @@ export const routes: Routes = [
     // Ruta 404 - redirige al signin si no encuentra la ruta
     {
         path: '**',
-        redirectTo: 'auth/signin',
+        redirectTo: 'login/signin',
     },
 ];

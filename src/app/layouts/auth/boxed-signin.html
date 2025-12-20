@@ -13,17 +13,17 @@
 
                 <div class="mx-auto w-full max-w-[440px]">
                     <div class="mb-10">
-                        <h1 class="text-3xl font-extrabold uppercase !leading-snug text-primary md:text-4xl">Ingresar</h1>
+                        <h1 class="text-3xl font-extrabold uppercase !leading-snug text-primary md:text-4xl">LIBERTY</h1>
                         <p class="text-base font-bold leading-normal text-white-dark">Ingrese su correo electrónico y contraseña para iniciar sesión</p>
                     </div>
                     <form class="space-y-5 dark:text-white" (submit)="onSubmit($event)">
                         <div>
-                            <label for="Username">Username</label>
+                            <label for="Username">Usuario</label>
                             <div class="relative text-white-dark">
                                 <input
                                     id="Username"
                                     type="text"
-                                    placeholder="Enter Username"
+                                    placeholder="Ingrese Usuario"
                                     class="form-input ps-10 placeholder:text-white-dark"
                                     [(ngModel)]="username"
                                     name="username"
@@ -54,28 +54,30 @@
                         <div>
                             <label class="flex cursor-pointer items-center">
                                 <input type="checkbox" class="form-checkbox bg-white dark:bg-black" />
-                                <span class="text-white-dark">Remember me</span>
+                                <span class="text-white-dark">Recordarme</span>
                             </label>
                         </div>
                         <button
                             type="submit"
-                            class="btn btn-gradient !mt-6 w-full border-0 uppercase shadow-[0_10px_20px_-10px_rgba(67,97,238,0.44)]"
+                            class="btn btn-primary !mt-6 w-full border-0 uppercase shadow-[0_10px_20px_-10px_rgba(67,97,238,0.44)]"
                             [disabled]="isLoading"
                         >
-                            <span *ngIf="!isLoading">Sign in</span>
+                            <span *ngIf="!isLoading">Entrar</span>
                             <span *ngIf="isLoading" class="flex items-center justify-center">
                                 <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Loading...
+                                Cargando...
                             </span>
                         </button>
                     </form>
+                     <!--
                     <div class="relative my-7 text-center md:mb-9">
                         <span class="absolute inset-x-0 top-1/2 h-px w-full -translate-y-1/2 bg-white-light dark:bg-white-dark"></span>
                         <span class="relative bg-white px-2 font-bold uppercase text-white-dark dark:bg-dark dark:text-white-light">or</span>
                     </div>
+
                     <div class="mb-10 md:mb-[60px]">
                         <ul class="flex justify-center gap-3.5 text-white">
                             <li>
@@ -116,12 +118,15 @@
                             </li>
                         </ul>
                     </div>
+                    -->
+                    <!--
                     <div class="text-center dark:text-white">
                         Don't have an account ?
                         <a routerLink="/auth/boxed-signup" class="uppercase text-primary underline transition hover:text-black dark:hover:text-white">
                             SIGN UP
                         </a>
                     </div>
+                    -->
                 </div>
             </div>
         </div>

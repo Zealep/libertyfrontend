@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { catchError, throwError } from 'rxjs';
@@ -44,6 +44,13 @@ export class LoanService {
         }
 
         return this.http.get<Loan[]>(url)
+            .pipe(catchError(this.handleErrorDefault));
+    }
+
+    updateNotification(id: number, sendNotification: string) {
+        let params = new HttpParams()
+            .set('sendNotification', sendNotification);
+        return this.http.patch(`${this.URL_BACKEND}/${id}/notification`, null, { params })
             .pipe(catchError(this.handleErrorDefault));
     }
 

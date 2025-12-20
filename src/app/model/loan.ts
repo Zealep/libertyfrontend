@@ -13,4 +13,5 @@ export interface Loan {
   disbursementDate: string; // ISO date string
   shortTermEndDate?: string; // Fecha fin de pago para préstamos a corto plazo
   installments?: Installment[];
+  sendNotification?: string; // 'S' para activo, 'N' para inactivo
 }

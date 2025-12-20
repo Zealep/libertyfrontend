@@ -18,12 +18,12 @@ export interface LoginResponse {
     providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = environment.url;
+    private url = environment.url;
 
     constructor(private http: HttpClient) { }
 
     login(credentials: LoginRequest): Observable<LoginResponse> {
-        return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials)
+        return this.http.post<LoginResponse>(`${this.url}/auth/login`, credentials)
             .pipe(
                 tap(response => {
                     // Guardar el token y datos del usuario

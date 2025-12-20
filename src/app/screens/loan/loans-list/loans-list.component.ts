@@ -39,6 +39,7 @@ export class LoansListComponent {
         { field: 'interestType', title: 'Tipo Interés', slot: 'interestType' },
         { field: 'isShortTerm', title: 'Plazo', slot: 'isShortTerm' },
         { field: 'status', title: 'Estado', slot: 'status' },
+        { field: 'sendNotification', title: 'Enviar Notificación?', slot: 'sendNotification', sort: false, filter: false },
         { field: 'acciones', title: 'Acciones', slot: 'acciones', sort: false, filter: false }
     ];
 
@@ -166,5 +167,40 @@ export class LoansListComponent {
 
     viewLoanDetails(loan: Loan) {
         this.router.navigate(['/loans', loan.id]);
+    }
+
+    toggleNotification(loan: Loan, event: Event) {
+        const checked = (event.target as HTMLInputElement).checked;
+        const newValue = checked ? 'S' : 'N';
+
+        this.loanService.updateNotification(loan.id!, newValue).subscribe({
+            next: () => {
+                // Actualizar el estado local
+                const updatedLoans = this.loans().map(l => 
+                    l.id === loan.id ? { ...l, sendNotification: newValue } : l
+                );
+                this.loans.set(updatedLoans);
+
+                Swal.fire({
+                    title: '¡Actualizado!',
+                    text: `Notificación ${checked ? 'activada' : 'desactivada'} correctamente`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            },
+            error: (err) => {
+                // Revertir el cambio en caso de error
+                (event.target as HTMLInputElement).checked = !checked;
+                
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudo actualizar la notificación',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                console.error('Error al actualizar notificación:', err);
+            }
+        });
     }
 }
